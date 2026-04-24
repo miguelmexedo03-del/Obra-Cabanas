@@ -1,0 +1,48 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(pnpm:*)",
+      "Bash(supabase:*)",
+      "Bash(git:*)",
+      "Bash(node:*)",
+      "Bash(npm run *)",
+      "Bash(tree:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebFetch(docs.claude.com)",
+      "WebFetch(nextjs.org)",
+      "WebFetch(supabase.com)",
+      "WebFetch(ui.shadcn.com)",
+      "WebFetch(tailwindcss.com)",
+      "WebFetch(react.dev)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(npm publish:*)",
+      "Bash(supabase db reset:*)",
+      "Bash(supabase db push:*)",
+      "Bash(vercel:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)",
+      "Bash(curl:* -X DELETE *)",
+      "Read(**/.env.local)",
+      "Read(**/.env.production)"
+    ]
+  },
+  "env": {
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "outputStyle": "default",
+  "includeCoAuthoredBy": false
+}
