@@ -23,7 +23,12 @@
       "WebFetch(supabase.com)",
       "WebFetch(ui.shadcn.com)",
       "WebFetch(tailwindcss.com)",
-      "WebFetch(react.dev)"
+      "WebFetch(react.dev)",
+      "WebFetch(tanstack.com)",
+      "WebFetch(zod.dev)",
+      "WebFetch(react-hook-form.com)",
+      "WebFetch(date-fns.org)",
+      "WebFetch(lucide.dev)"
     ],
     "ask": [
       "Bash(git push:*)",

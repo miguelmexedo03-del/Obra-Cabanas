@@ -1,78 +1,71 @@
-# MCPs recomendados para o Claude Code
+# MCPs para o Claude Code — Obra Cabanas
 
-MCPs (Model Context Protocol servers) dão ao Claude Code acesso direto a ferramentas externas — Supabase, GitHub, etc. — em vez de te obrigar a copiar/colar manualmente.
+MCPs (Model Context Protocol servers) dão ao Claude Code acesso direto a ferramentas externas — Supabase, GitHub, etc.
 
-Corre estes comandos **no terminal onde corres o `claude`**. O Claude Code detecta-os automaticamente.
+Corre estes comandos **no terminal onde corres o `claude`** (PowerShell ou bash).  
+Substitui `SEU_TOKEN` pelo token real **sem nunca o colar numa conversa com o Claude**.
 
 ---
 
-## 1. Supabase MCP (essencial)
+## Regras de segurança
 
-Permite ao Claude Code inspecionar o teu schema, correr queries read-only para debug, e gerar types automaticamente.
+- Tokens ficam guardados em `~/.claude.json` (fora de qualquer git repo).
+- Usa **sempre** `--scope user` para MCPs com tokens — nunca `--scope project`.
+- Usa **sempre** `-e "VAR=token"` para passar o token — nunca `--access-token=` na linha de comando (ficaria visível em logs).
+- **Nunca coles tokens na janela do chat** do Claude Code.
+
+---
+
+## 1. Supabase MCP
+
+Permite inspecionar o schema, correr queries read-only e validar migrações.
 
 ```bash
-claude mcp add supabase --scope project -- \
-  npx -y @supabase/mcp-server-supabase \
-  --access-token=<teu-supabase-access-token>
+claude mcp add supabase --scope user \
+  -e "SUPABASE_ACCESS_TOKEN=sbp_SEU_TOKEN_AQUI" \
+  -- npx -y @supabase/mcp-server-supabase
 ```
 
-O access token tiras aqui: https://supabase.com/dashboard/account/tokens
+Token: https://supabase.com/dashboard/account/tokens → "Generate new token"
 
-**Modo read-only é suficiente.** Não deixes o MCP fazer writes — deixa as migrations fazê-lo de forma controlada.
+Para revogar e reconfigurar (ex: token comprometido):
+```bash
+claude mcp remove supabase
+# Gera novo token no dashboard, depois corre o add acima com o novo token
+```
 
 ---
 
-## 2. GitHub MCP (recomendado se usares GitHub)
+## 2. GitHub MCP
 
 Permite criar PRs, rever issues, etc., sem saíres do Claude Code.
 
 ```bash
-claude mcp add github --scope user -- \
-  npx -y @modelcontextprotocol/server-github
+claude mcp add github --scope user \
+  -e "GITHUB_PERSONAL_ACCESS_TOKEN=github_pat_SEU_TOKEN_AQUI" \
+  -- npx -y @github/mcp-server
 ```
 
-Vai pedir-te o `GITHUB_PERSONAL_ACCESS_TOKEN`. Cria em https://github.com/settings/tokens (scope: `repo`).
+Token: https://github.com/settings/tokens → "Generate new token (classic)" com scope `repo`.
+
+> **Nota:** O package correto é `@github/mcp-server`. O `@modelcontextprotocol/server-github` está deprecated.
 
 ---
 
-## 3. Filesystem MCP (opcional)
-
-Já vem embutido no Claude Code via Read/Write/Edit. Não precisas de MCP separado.
-
----
-
-## 4. Skills recomendadas
-
-No Claude Code, skills vivem em `.claude/skills/` ou são instaladas via plugin marketplace. Para este projeto:
-
-- **dbs-framework** (se quiseres estruturar skills novas mais tarde)
-- **skill-creator** (para criares skills específicas do teu workflow de obra)
-
-Podes instalar via:
+## 3. Verificar estado
 
 ```bash
-claude plugin install <nome-do-plugin>
+claude mcp list
 ```
 
-Ou, dentro da sessão do Claude Code, escreve `/plugin search construction` para procurar o que existe.
-
-**Para já, não precisas de instalar skills extra.** O CLAUDE.md + PROMPT_INICIAL.md são suficientes para arrancar os milestones.
+Deves ver `✓ Connected` para ambos. Se vires `✗ Failed`, verifica se o token ainda é válido.
 
 ---
 
-## 5. Verificar o que está ligado
+## Ordem recomendada
 
-Dentro de uma sessão do Claude Code:
-
-```
-/mcp
-```
-
-Mostra-te todos os MCPs ativos e o seu estado.
-
----
-
-## Ordem sugerida
-
-1. Configura Supabase MCP **antes** de colares o PROMPT_INICIAL.md — permite ao Claude Code validar o schema que ele próprio escreveu.
-2. Configura GitHub MCP **depois do M0** — só precisas quando começares a fazer commits sérios.
+1. Cria o projeto Supabase em supabase.com.
+2. Gera token Supabase e configura o MCP.
+3. Aplica o schema: `supabase db push` (ou SQL Editor no dashboard).
+4. Preenche `.env.local` com `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+5. Configura GitHub MCP depois do M1 validado.
