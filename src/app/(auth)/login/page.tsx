@@ -6,6 +6,8 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { login } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 function LoginForm() {
   const [state, action, pending] = useActionState(login, null)
@@ -23,40 +25,42 @@ function LoginForm() {
         <input type="hidden" name="redirectTo" value={redirectTo} />
 
         <div className="space-y-1.5">
-          <label htmlFor="email" className="text-sm font-medium">
-            Email
-          </label>
-          <input
+          <Label htmlFor="email">Email</Label>
+          <Input
             id="email"
             name="email"
             type="email"
             autoComplete="email"
             required
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="tu@exemplo.com"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="password" className="text-sm font-medium">
-            Password
-          </label>
-          <input
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+            >
+              Esqueceste-te da password?
+            </Link>
+          </div>
+          <Input
             id="password"
             name="password"
             type="password"
             autoComplete="current-password"
             required
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="••••••••"
           />
         </div>
 
         {state && !state.success && (
-          <p className="text-sm text-destructive">{state.error}</p>
+          <p className="text-sm text-destructive" role="alert">{state.error}</p>
         )}
 
-        <Button type="submit" className="w-full" disabled={pending}>
+        <Button type="submit" className="w-full h-10" disabled={pending}>
           {pending ? 'A entrar…' : 'Entrar'}
         </Button>
       </form>

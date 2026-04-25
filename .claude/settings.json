@@ -28,7 +28,13 @@
       "WebFetch(zod.dev)",
       "WebFetch(react-hook-form.com)",
       "WebFetch(date-fns.org)",
-      "WebFetch(lucide.dev)"
+      "WebFetch(lucide.dev)",
+      "WebFetch(base-ui.com)",
+      "WebFetch(developer.mozilla.org)",
+      "Bash(kill-port:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(find:*)"
     ],
     "ask": [
       "Bash(git push:*)",
