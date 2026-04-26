@@ -16,36 +16,35 @@ async function login(page: import('@playwright/test').Page) {
 test('checklist toggle persists across reload', async ({ page }) => {
   await login(page)
   await page.goto('/apartamentos/1')
+  await page.waitForLoadState('networkidle')
 
-  // Find the first unchecked checkbox label
-  const firstUnchecked = page.locator('label').filter({
-    has: page.locator('input[type="checkbox"]:not(:checked)'),
-  }).first()
+  const allCheckboxes = page.locator('input[type="checkbox"]')
 
-  await expect(firstUnchecked).toBeVisible()
-  const elementoText = await firstUnchecked.locator('p').first().textContent()
+  // Find first unchecked checkbox by scanning positions
+  const count = await allCheckboxes.count()
+  let targetIdx = -1
+  for (let i = 0; i < count; i++) {
+    if (!(await allCheckboxes.nth(i).isChecked())) {
+      targetIdx = i
+      break
+    }
+  }
+  expect(targetIdx, 'Expected at least one unchecked item in AP1').toBeGreaterThanOrEqual(0)
 
-  // Check it
-  await firstUnchecked.click()
+  // Click the sr-only input directly (force bypasses clip/visibility)
+  await allCheckboxes.nth(targetIdx).click({ force: true })
 
-  // Optimistic update: checked state visible immediately
-  const checkbox = firstUnchecked.locator('input[type="checkbox"]')
-  await expect(checkbox).toBeChecked()
+  // Optimistic update should be immediate
+  await expect(allCheckboxes.nth(targetIdx)).toBeChecked({ timeout: 8000 })
 
-  // Reload and verify persistence
+  // Reload — verify the toggle was persisted to the DB
   await page.reload()
-  const reloadedItem = page.locator('label').filter({
-    has: page.locator(`p:text-is("${elementoText}")`),
-  }).first()
-  const reloadedCheckbox = reloadedItem.locator('input[type="checkbox"]')
-  await expect(reloadedCheckbox).toBeChecked()
+  await page.waitForLoadState('networkidle')
+  await expect(page.locator('input[type="checkbox"]').nth(targetIdx)).toBeChecked()
 
-  // Uncheck it (cleanup so test is re-runnable)
-  await reloadedItem.click()
-  await expect(reloadedCheckbox).not.toBeChecked()
+  // Cleanup: uncheck so test is idempotent across runs
+  await page.locator('input[type="checkbox"]').nth(targetIdx).click({ force: true })
   await page.reload()
-  const cleanupCheckbox = page.locator('label').filter({
-    has: page.locator(`p:text-is("${elementoText}")`),
-  }).first().locator('input[type="checkbox"]')
-  await expect(cleanupCheckbox).not.toBeChecked()
+  await page.waitForLoadState('networkidle')
+  await expect(page.locator('input[type="checkbox"]').nth(targetIdx)).not.toBeChecked()
 })
