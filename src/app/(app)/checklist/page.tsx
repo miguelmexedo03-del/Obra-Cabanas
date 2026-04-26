@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { ChecklistFilters } from '@/components/checklist/checklist-filters'
 import { ChecklistItem } from '@/components/checklist/checklist-item'
+import { sanitizeIlikePattern } from '@/lib/utils'
 
 interface Props {
   searchParams: Promise<{
@@ -55,8 +56,8 @@ async function ChecklistContent({ searchParams }: Props) {
   if (params.status === 'checked') query = query.eq('concluido', true)
   if (params.status === 'unchecked') query = query.eq('concluido', false)
   if (params.q?.trim()) {
-    const q = params.q.trim()
-    query = query.or(`elemento.ilike.%${q}%,sub_elemento.ilike.%${q}%`)
+    const q = sanitizeIlikePattern(params.q)
+    if (q) query = query.or(`elemento.ilike.%${q}%,sub_elemento.ilike.%${q}%`)
   }
 
   const { data: elementos, error } = await query as { data: RawElemento[] | null; error: unknown }

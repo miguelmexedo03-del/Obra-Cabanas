@@ -1,6 +1,6 @@
 'use client'
 
-import { useOptimistic, useTransition } from 'react'
+import { useOptimistic, useTransition, useState, useEffect } from 'react'
 import { toggleElemento } from '@/app/actions/checklist'
 
 interface Props {
@@ -14,17 +14,29 @@ interface Props {
 export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor }: Props) {
   const [optimistic, setOptimistic] = useOptimistic(concluido)
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!error) return
+    const t = setTimeout(() => setError(null), 4000)
+    return () => clearTimeout(t)
+  }, [error])
 
   function handleChange() {
     const next = !optimistic
     startTransition(async () => {
       setOptimistic(next)
-      await toggleElemento(id, next)
+      const result = await toggleElemento(id, next)
+      if (!result.success) {
+        setOptimistic(!next)
+        setError(result.error)
+      }
     })
   }
 
   return (
-    // min-h-[44px] ensures 44px touch target as per Apple HIG / WCAG 2.5.5
+    <>
+    {/* min-h-[44px] ensures 44px touch target as per Apple HIG / WCAG 2.5.5 */}
     <label
       className={`flex items-start gap-3 px-4 py-3 min-h-[44px] cursor-pointer
         rounded-md transition-colors hover:bg-muted/40 active:bg-muted/60
@@ -73,5 +85,11 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
         )}
       </div>
     </label>
+    {error && (
+      <p role="alert" className="text-xs text-destructive px-4 pb-1">
+        {error}
+      </p>
+    )}
+    </>
   )
 }

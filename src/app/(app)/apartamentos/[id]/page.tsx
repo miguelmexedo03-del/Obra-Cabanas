@@ -7,6 +7,7 @@ import { ChecklistFilters } from '@/components/checklist/checklist-filters'
 import { ChecklistItem } from '@/components/checklist/checklist-item'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { sanitizeIlikePattern } from '@/lib/utils'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -72,8 +73,8 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
   if (filters.status === 'checked') query = query.eq('concluido', true)
   if (filters.status === 'unchecked') query = query.eq('concluido', false)
   if (filters.q?.trim()) {
-    const q = filters.q.trim()
-    query = query.or(`elemento.ilike.%${q}%,sub_elemento.ilike.%${q}%`)
+    const q = sanitizeIlikePattern(filters.q)
+    if (q) query = query.or(`elemento.ilike.%${q}%,sub_elemento.ilike.%${q}%`)
   }
 
   const { data: elementos } = await query as { data: RawElemento[] | null; error: unknown }
