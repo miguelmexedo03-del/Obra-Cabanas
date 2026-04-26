@@ -8,6 +8,7 @@ const navLinks = [
   { href: '/', label: 'Dashboard' },
   { href: '/apartamentos', label: 'Apartamentos' },
   { href: '/checklist', label: 'Checklist' },
+  { href: '/gantt', label: 'Gantt' },
 ]
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {

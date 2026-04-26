@@ -25,7 +25,7 @@ Aplicação web colaborativa para gerir uma obra de reabilitação de **24 apart
 
 - **Frontend:** Next.js 15 (App Router) + TypeScript + Tailwind CSS + shadcn/ui
 - **Backend:** Supabase (Postgres + Auth + Realtime + Row-Level Security)
-- **Charts/Gantt:** `frappe-gantt` ou `gantt-task-react` (decidir no M3)
+- **Charts/Gantt:** Custom CSS grid + barras absolutas (Pointer Events API para drag/resize). Sem biblioteca externa — controlo total e mobile-first.
 - **Kanban:** `@dnd-kit/core` + `@dnd-kit/sortable`
 - **Data fetching:** Server Components + `@tanstack/react-query` para estado do cliente
 - **Forms:** `react-hook-form` + `zod` para validação
@@ -46,7 +46,7 @@ apartamentos       (24 rows fixas: AP1..AP24)
 fases              (5 rows: Tetos, Paredes, Carpintaria, Chão/Rodapé, WC Equipamentos)
 divisoes           (por apartamento: Entrada, Suite 1, WC Suite 1, Sala, Cozinha, Varanda...)
 elementos          (os items do checklist — ~3748 rows)
-tarefas_gantt      (parent + children; 24 + 120 = 144 rows)
+tarefas_gantt      (parent + children; 24 + 192 = 216 rows — 8 fases × 24 APs)
 audit_log          (quem mudou o quê, quando)
 ```
 
@@ -160,7 +160,7 @@ O trabalho está dividido em 8 milestones. Completa-os por ordem. Não saltes mi
 - **M0** — Setup: scaffold Next.js, Supabase init, shadcn init, dependências base.
 - **M1** — Auth: signup/login, middleware, perfis com role, tabela `profiles`, RLS base.
 - **M2** — Apartamentos + Checklist: schema, seed dos 24 APs e 3748 items, UI de checklist com filtros (AP, fase, responsável, status) e pesquisa full-text.
-- **M3** — Gantt agregado: tabela `tarefas_gantt`, UI com barras por fase, edição de datas por drag ou formulário.
+- **M3** ✅ — Gantt interativo: `tarefas_gantt` populada (216 rows), UI com barras por fase, drag+resize, modal de edição, zoom dia/semana/mês, indicador de hoje. Vista agregada `/gantt` + vista por AP `/apartamentos/[id]/gantt`.
 - **M4** — Kanban: view SQL + UI com dnd-kit. Colunas: Por Fazer / Em Curso / Bloqueado / Concluído.
 - **M5** — LoB + Dashboard: página LoB (takt + durações → cronograma calculado), dashboard com KPIs (% obra, bottleneck, AP mais atrasado).
 - **M6** — Realtime + Audit: subscriptions Supabase para updates em tempo real, trigger de audit log, página de histórico.
