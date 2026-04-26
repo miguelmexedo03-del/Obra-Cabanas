@@ -46,7 +46,7 @@ apartamentos       (24 rows fixas: AP1..AP24)
 fases              (5 rows: Tetos, Paredes, Carpintaria, Chão/Rodapé, WC Equipamentos)
 divisoes           (por apartamento: Entrada, Suite 1, WC Suite 1, Sala, Cozinha, Varanda...)
 elementos          (os items do checklist — ~3748 rows)
-tarefas_gantt      (parent + children; 24 + 192 = 216 rows — 8 fases × 24 APs)
+tarefas_gantt      (parent + children; 24 + 264 = 288 rows — 11 fases × 24 APs)
 audit_log          (quem mudou o quê, quando)
 ```
 
@@ -65,18 +65,21 @@ Relações-chave:
 
 ## 4. Regras de Negócio
 
-**Classificação por fase** (já validada, mantém no seed):
-- F1 Tetos (id=1): "teto"
-- F2 Paredes (id=2): "parede"
+**Classificação por fase** (11 fases — classificação usa elemento + sub_elemento):
+- F1 Teto (id=1): "teto" no elemento, sub_elemento nulo ou "tratamento"
+- F9 Remendos Teto (id=9): "teto" no elemento, sub_elemento com parafuso/foco/fissur/humidade
+- F10 Pintura Teto (id=10): "teto" no elemento, sub_elemento com dem/extracoat/prim
+- F2 Paredes (id=2): "parede" no elemento, sub_elemento com pedra/pladur/fecho ou nulo
+- F11 Remendo Paredes (id=11): "parede" no elemento, sub_elemento com tomad/interruptor/mecanismo
+- F12 Pintura Paredes (id=12): "parede" no elemento, sub_elemento com dem/extracoat/prim
 - F3 Portas (id=3): "aro", "porta"
-- F6 Móveis (id=6): "vei" (móveis/movéis — accent-safe)
-- F7 Bancas (id=7): "banca", "bancada"
+- F6 Móveis (id=6): "vei" (móveis/movéis) + "banca"/"bancada" (Bancas integradas)
 - F8 Eletrodomésticos (id=8): "eletrodom"
 - F4 Chão/Rodapé (id=4): "chão", "rodapé"
 - F5 WC Equipamentos (id=5): "lavat", "sanita", "chuveiro", "duche", "toalheiro"
 
 **Sequência construtiva** (precedência entre fases, a respeitar no Gantt/LoB):
-Tetos → Paredes → Portas → Móveis → Bancas → Eletrodomésticos → Chão/Rodapé → WC Equipamentos
+Teto → Remendos Teto → Pintura Teto → Paredes → Remendo Paredes → Pintura Paredes → Portas → Móveis → Eletrodomésticos → Chão/Rodapé → WC Equipamentos
 
 **Permissões (RLS):**
 - `operario` só vê e edita checklist do(s) apartamento(s) atribuído(s) (tabela `apartamento_operario`)

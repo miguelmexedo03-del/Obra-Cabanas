@@ -9,7 +9,7 @@ USO:
 Output:
 - INSERTs para a tabela `divisoes` (uma por apartamento × divisão única)
 - INSERTs para a tabela `elementos` (um por linha do checklist classificável)
-- INSERTs para a tabela `tarefas_gantt` (216 rows: 24 pais + 192 fases)
+- INSERTs para a tabela `tarefas_gantt` (288 rows: 24 pais + 264 filhos / 11 fases × 24 APs)
 """
 from openpyxl import load_workbook
 from pathlib import Path
@@ -17,30 +17,56 @@ import argparse
 
 
 FASE_MAP = {
-    1: 'Tetos',
-    2: 'Paredes',
-    3: 'Portas',
-    4: 'Chão e Rodapé',
-    5: 'WC Equipamentos',
-    6: 'Móveis',
-    7: 'Bancas',
-    8: 'Eletrodomésticos',
+    1:  'Teto',
+    9:  'Remendos Teto',
+    10: 'Pintura Teto',
+    2:  'Paredes',
+    11: 'Remendo Paredes',
+    12: 'Pintura Paredes',
+    3:  'Portas',
+    6:  'Móveis',
+    8:  'Eletrodomésticos',
+    4:  'Chão e Rodapé',
+    5:  'WC Equipamentos',
 }
 
+# Ordem construtiva para geração de tarefas_gantt
+FASES_ORDEM_CONSTRUTIVA = [1, 9, 10, 2, 11, 12, 3, 6, 8, 4, 5]
 
-def classify_fase(elemento):
+
+def classify_fase(elemento, sub_elemento=None):
+    """Classifica um item do checklist na fase correta.
+
+    A classificação usa o `elemento` (coluna B) como grupo principal,
+    e o `sub_elemento` (coluna C) para distinguir sub-fases dentro do
+    Teto e das Paredes.
+    """
     if not elemento:
         return None
     e = str(elemento).lower()
+    s = str(sub_elemento).lower() if sub_elemento else ''
+
     if "teto" in e:
-        return 1
+        # Split Teto em 3 sub-fases baseado no sub_elemento
+        if s and ('dem' in s or 'extracoat' in s or 'prim' in s):
+            return 10  # Pintura Teto
+        if s and 'tratamento' not in s:
+            return 9   # Remendos Teto (parafuso, foco, humidade, fissuras...)
+        return 1       # Teto (null sub ou tratamento de junta)
+
     if "parede" in e:
-        return 2
-    # Carpintaria split into 4 sub-phases (check most-specific first)
+        # Split Paredes em 3 sub-fases baseado no sub_elemento
+        if s and ('dem' in s or 'extracoat' in s or 'prim' in s):
+            return 12  # Pintura Paredes
+        if s and ('tomad' in s or 'interruptor' in s or 'mecanismo' in s):
+            return 11  # Remendo Paredes
+        return 2       # Paredes (pedra, pladur, fecho estrutura, etc.)
+
+    # Restantes fases (check mais específico primeiro)
     if "eletrodom" in e:
         return 8
-    if "banca" in e:
-        return 7
+    if "banca" in e or "bancada" in e:
+        return 6  # Bancas integradas em Móveis
     if "vei" in e:  # móveis/movéis — accent-safe
         return 6
     if "aro" in e or "porta" in e:
@@ -93,7 +119,9 @@ def parse_checklist(path):
             has_c = c is not None and str(c).strip()
             if not (has_b or has_c):
                 continue
-            fase = classify_fase(current_elemento)
+
+            sub_elem = str(c).strip() if has_c else None
+            fase = classify_fase(current_elemento, sub_elem)
             if fase is None:
                 continue
 
@@ -101,7 +129,7 @@ def parse_checklist(path):
                 "ap": ap,
                 "divisao": current_divisao or "—",
                 "elemento": current_elemento or "",
-                "sub_elemento": str(c).strip() if has_c else None,
+                "sub_elemento": sub_elem,
                 "fase": fase,
                 "checked": 1 if (d is not None and "✓" in str(d)) else 0,
                 "notas": str(e_notes).strip() if e_notes else None,
@@ -122,7 +150,6 @@ def generate_sql(rows, divisoes_set, out_path):
     lines.append("-- Divisões (por apartamento)")
     lines.append("insert into divisoes (apartamento_id, nome, ordem) values")
     divisao_values = []
-    # Manter ordem determinística
     for (ap, nome), ordem in sorted(divisoes_set.items()):
         divisao_values.append(f"  ({ap}, {sql_escape(nome)}, {ordem})")
     lines.append(",\n".join(divisao_values) + ";")
@@ -131,16 +158,13 @@ def generate_sql(rows, divisoes_set, out_path):
     # --- Elementos ---
     lines.append("-- Elementos (items individuais do checklist)")
     lines.append("-- Nota: concluído=false por defeito, o seed histórico não traz estado real.")
-    lines.append("-- Se quiseres importar o estado atual, ver script sync_checklist.py.")
     lines.append("")
-    # Chunk em batches de 500 para ficar legível
     BATCH = 500
     for i in range(0, len(rows), BATCH):
         batch = rows[i:i+BATCH]
         lines.append("insert into elementos (apartamento_id, divisao_id, fase_id, elemento, sub_elemento, concluido, notas, responsavel) values")
         values = []
         for row in batch:
-            # divisao_id resolvido via subquery — mais robusto a rearranjos
             divisao_sql = f"(select id from divisoes where apartamento_id = {row['ap']} and nome = {sql_escape(row['divisao'])} limit 1)"
             values.append(
                 f"  ({row['ap']}, {divisao_sql}, {row['fase']}, "
@@ -151,8 +175,9 @@ def generate_sql(rows, divisoes_set, out_path):
         lines.append(",\n".join(values) + ";")
         lines.append("")
 
-    # --- Tarefas Gantt: 24 pais + 120 filhos ---
-    lines.append("-- Tarefas Gantt: 24 pais (apartamento) + 192 filhos (8 fases × 24 APs)")
+    # --- Tarefas Gantt: 24 pais + 264 filhos (11 fases × 24 APs) ---
+    n_fases = len(FASES_ORDEM_CONSTRUTIVA)
+    lines.append(f"-- Tarefas Gantt: 24 pais + {n_fases * 24} filhos ({n_fases} fases × 24 APs)")
     lines.append("-- Datas ficam null; serão preenchidas depois via LoB ou UI.")
     lines.append("")
     lines.append("-- Pais (nivel=1)")
@@ -165,12 +190,9 @@ def generate_sql(rows, divisoes_set, out_path):
     lines.append(",\n".join(parent_values) + ";")
     lines.append("")
 
-    # Fases by ordem: 1,2,3,6,7,8,4,5
-    fases_por_ordem = sorted(FASE_MAP.keys(), key=lambda fid: {1:1,2:2,3:3,6:4,7:5,8:6,4:7,5:8}[fid])
-    lines.append("-- Filhos (nivel=2, 8 fases por apartamento)")
-    lines.append("-- Usa subquery para obter parent_id do apartamento correspondente")
+    lines.append(f"-- Filhos (nivel=2, {n_fases} fases por apartamento)")
     for ap in range(1, 25):
-        for fase_id in fases_por_ordem:
+        for fase_id in FASES_ORDEM_CONSTRUTIVA:
             fase_nome = FASE_MAP[fase_id]
             lines.append(
                 f"insert into tarefas_gantt (parent_id, apartamento_id, fase_id, nivel, nome, status) values "
@@ -178,12 +200,11 @@ def generate_sql(rows, divisoes_set, out_path):
                 f"{ap}, {fase_id}, 2, {sql_escape(fase_nome)}, 'por_fazer');"
             )
     lines.append("")
-
     lines.append("commit;")
     lines.append("")
 
     out_path.write_text("\n".join(lines), encoding="utf-8")
-    print(f"OK: {out_path} ({len(rows)} elementos, {len(divisoes_set)} divisões, 216 tarefas gantt)")
+    print(f"OK: {out_path} ({len(rows)} elementos, {len(divisoes_set)} divisões, {24 + n_fases * 24} tarefas gantt)")
 
 
 if __name__ == "__main__":
