@@ -66,14 +66,17 @@ Relações-chave:
 ## 4. Regras de Negócio
 
 **Classificação por fase** (já validada, mantém no seed):
-- F1 Tetos: elementos com "teto" no nome
-- F2 Paredes: "parede"
-- F3 Carpintaria: "aro", "porta", "móvel/móveis", "banca/bancada", "eletrodoméstico"
-- F4 Chão/Rodapé: "chão" ou "rodapé"
-- F5 WC Equipamentos: "lavatório", "sanita", "chuveiro", "duche", "toalheiro"
+- F1 Tetos (id=1): "teto"
+- F2 Paredes (id=2): "parede"
+- F3 Portas (id=3): "aro", "porta"
+- F6 Móveis (id=6): "vei" (móveis/movéis — accent-safe)
+- F7 Bancas (id=7): "banca", "bancada"
+- F8 Eletrodomésticos (id=8): "eletrodom"
+- F4 Chão/Rodapé (id=4): "chão", "rodapé"
+- F5 WC Equipamentos (id=5): "lavat", "sanita", "chuveiro", "duche", "toalheiro"
 
 **Sequência construtiva** (precedência entre fases, a respeitar no Gantt/LoB):
-Tetos → Paredes → Carpintaria → Chão/Rodapé → WC Equipamentos
+Tetos → Paredes → Portas → Móveis → Bancas → Eletrodomésticos → Chão/Rodapé → WC Equipamentos
 
 **Permissões (RLS):**
 - `operario` só vê e edita checklist do(s) apartamento(s) atribuído(s) (tabela `apartamento_operario`)

@@ -9,7 +9,7 @@ USO:
 Output:
 - INSERTs para a tabela `divisoes` (uma por apartamento × divisão única)
 - INSERTs para a tabela `elementos` (um por linha do checklist classificável)
-- INSERTs para a tabela `tarefas_gantt` (144 rows: 24 pais + 120 fases)
+- INSERTs para a tabela `tarefas_gantt` (216 rows: 24 pais + 192 fases)
 """
 from openpyxl import load_workbook
 from pathlib import Path
@@ -19,9 +19,12 @@ import argparse
 FASE_MAP = {
     1: 'Tetos',
     2: 'Paredes',
-    3: 'Carpintaria',
+    3: 'Portas',
     4: 'Chão e Rodapé',
     5: 'WC Equipamentos',
+    6: 'Móveis',
+    7: 'Bancas',
+    8: 'Eletrodomésticos',
 }
 
 
@@ -33,11 +36,18 @@ def classify_fase(elemento):
         return 1
     if "parede" in e:
         return 2
-    if any(k in e for k in ["aro", "porta", "móvei", "movei", "banca", "eletrodomésti", "eletrodomesti", "bancada"]):
+    # Carpintaria split into 4 sub-phases (check most-specific first)
+    if "eletrodom" in e:
+        return 8
+    if "banca" in e:
+        return 7
+    if "vei" in e:  # móveis/movéis — accent-safe
+        return 6
+    if "aro" in e or "porta" in e:
         return 3
     if "chão" in e or "chao" in e or "rodapé" in e or "rodape" in e:
         return 4
-    if any(k in e for k in ["lavatório", "lavatorio", "sanita", "chuveiro", "duche", "toalheiro"]):
+    if any(k in e for k in ["lavat", "sanita", "chuveiro", "duche", "toalheiro"]):
         return 5
     return None
 
@@ -142,7 +152,7 @@ def generate_sql(rows, divisoes_set, out_path):
         lines.append("")
 
     # --- Tarefas Gantt: 24 pais + 120 filhos ---
-    lines.append("-- Tarefas Gantt: 24 pais (apartamento) + 120 filhos (fases)")
+    lines.append("-- Tarefas Gantt: 24 pais (apartamento) + 192 filhos (8 fases × 24 APs)")
     lines.append("-- Datas ficam null; serão preenchidas depois via LoB ou UI.")
     lines.append("")
     lines.append("-- Pais (nivel=1)")
@@ -155,10 +165,12 @@ def generate_sql(rows, divisoes_set, out_path):
     lines.append(",\n".join(parent_values) + ";")
     lines.append("")
 
-    lines.append("-- Filhos (nivel=2, 5 fases por apartamento)")
+    # Fases by ordem: 1,2,3,6,7,8,4,5
+    fases_por_ordem = sorted(FASE_MAP.keys(), key=lambda fid: {1:1,2:2,3:3,6:4,7:5,8:6,4:7,5:8}[fid])
+    lines.append("-- Filhos (nivel=2, 8 fases por apartamento)")
     lines.append("-- Usa subquery para obter parent_id do apartamento correspondente")
     for ap in range(1, 25):
-        for fase_id in range(1, 6):
+        for fase_id in fases_por_ordem:
             fase_nome = FASE_MAP[fase_id]
             lines.append(
                 f"insert into tarefas_gantt (parent_id, apartamento_id, fase_id, nivel, nome, status) values "
@@ -171,7 +183,7 @@ def generate_sql(rows, divisoes_set, out_path):
     lines.append("")
 
     out_path.write_text("\n".join(lines), encoding="utf-8")
-    print(f"OK: {out_path} ({len(rows)} elementos, {len(divisoes_set)} divisões, 144 tarefas gantt)")
+    print(f"OK: {out_path} ({len(rows)} elementos, {len(divisoes_set)} divisões, 216 tarefas gantt)")
 
 
 if __name__ == "__main__":
