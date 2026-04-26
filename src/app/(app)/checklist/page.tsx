@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { ChecklistFilters } from '@/components/checklist/checklist-filters'
 import { ChecklistItem } from '@/components/checklist/checklist-item'
+import { RealtimeRefresh } from '@/components/shared/realtime-refresh'
 import { sanitizeIlikePattern } from '@/lib/utils'
 
 interface Props {
@@ -147,6 +148,7 @@ export default async function ChecklistPage({ searchParams }: Props) {
 
   return (
     <div>
+      <RealtimeRefresh table="elementos" />
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Checklist global</h1>
         <p className="text-sm text-muted-foreground mt-1">

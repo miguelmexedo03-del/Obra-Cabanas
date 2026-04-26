@@ -41,6 +41,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                 {link.label}
               </Link>
             ))}
+            {profile?.role === 'admin' && (
+              <Link
+                href="/admin/audit"
+                className="px-3 py-1.5 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                Audit
+              </Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-3 ml-auto">

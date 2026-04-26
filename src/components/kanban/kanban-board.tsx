@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useOptimistic, useTransition, useRef, useEffect } from 'react'
+import { useState, useOptimistic, useTransition, useRef, useEffect, useCallback } from 'react'
+import { useRealtimeRefresh } from '@/hooks/use-realtime-refresh'
 import {
   DndContext,
   DragOverlay,
@@ -24,6 +25,7 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ cards: initialCards, canEdit }: KanbanBoardProps) {
+  useRealtimeRefresh('tarefas_gantt')
   const [, startTransition] = useTransition()
   const [optimisticCards, updateOptimisticCards] = useOptimistic(
     initialCards,
