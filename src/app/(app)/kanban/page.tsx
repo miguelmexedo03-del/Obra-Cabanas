@@ -1,0 +1,49 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { KanbanBoard } from '@/components/kanban/kanban-board'
+import type { KanbanCardData } from '@/components/kanban/kanban-card'
+
+export default async function KanbanPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const [{ data: rawCards }, { data: profile }] = await Promise.all([
+    supabase
+      .from('kanban_cards')
+      .select('id, apartamento_codigo, fase_nome, fase_cor, inicio, fim, status, responsavel_nome, progresso')
+      .order('apartamento_id')
+      .order('fase_id'),
+    supabase.from('profiles').select('role').eq('id', user.id).single(),
+  ])
+
+  // View columns are all nullable in generated types; filter incomplete rows
+  const cards: KanbanCardData[] = (rawCards ?? [])
+    .filter(r => r.id != null && r.apartamento_codigo != null && r.fase_nome != null)
+    .map(r => ({
+      id: r.id!,
+      apartamento_codigo: r.apartamento_codigo!,
+      fase_nome: r.fase_nome!,
+      fase_cor: r.fase_cor ?? '#94a3b8',
+      inicio: r.inicio ?? null,
+      fim: r.fim ?? null,
+      status: r.status ?? 'por_fazer',
+      responsavel_nome: r.responsavel_nome ?? null,
+      progresso: r.progresso ?? 0,
+    }))
+
+  const canEdit = profile?.role === 'admin' || profile?.role === 'encarregado'
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Kanban — Obra Cabanas</h1>
+        <p className="text-sm text-muted-foreground">
+          {canEdit ? 'Arrasta os cartões para mudar de estado.' : 'Só leitura.'}
+        </p>
+      </div>
+
+      <KanbanBoard cards={cards} canEdit={canEdit} />
+    </div>
+  )
+}
