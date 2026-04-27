@@ -11,6 +11,7 @@ interface Props {
   searchParams: Promise<{
     ap?: string
     fase?: string
+    divisao?: string
     status?: string
     q?: string
   }>
@@ -56,6 +57,7 @@ async function ChecklistContent({ searchParams }: Props) {
     .limit(500)
 
   if (params.ap) query = query.eq('apartamento_id', Number(params.ap))
+  if (params.divisao) query = query.eq('divisao_id', Number(params.divisao))
   if (params.fase) query = query.eq('fase_id', Number(params.fase))
   if (params.status === 'checked') query = query.eq('concluido', true)
   if (params.status === 'unchecked') query = query.eq('concluido', false)
@@ -142,14 +144,20 @@ async function ChecklistContent({ searchParams }: Props) {
 
 export default async function ChecklistPage({ searchParams }: Props) {
   const supabase = await createClient()
+  const params = await searchParams
+  const apId = params.ap ? Number(params.ap) : null
 
-  const [apResult, fasesResult] = await Promise.all([
+  const [apResult, fasesResult, divisoesResult] = await Promise.all([
     supabase.from('apartamentos').select('id, codigo').order('id'),
     supabase.from('fases').select('id, nome, cor_hex, ordem').order('ordem'),
+    apId
+      ? supabase.from('divisoes').select('id, nome, ordem').eq('apartamento_id', apId).order('ordem')
+      : Promise.resolve({ data: null }),
   ])
 
   const apartamentos = apResult.data as { id: number; codigo: string }[] | null
   const fases = fasesResult.data as { id: number; nome: string; cor_hex: string; ordem: number }[] | null
+  const divisoes = divisoesResult.data as { id: number; nome: string; ordem: number }[] | null
 
   return (
     <div>
@@ -164,6 +172,7 @@ export default async function ChecklistPage({ searchParams }: Props) {
           <ChecklistFilters
             apartamentos={apartamentos?.map(a => ({ id: a.id, label: a.codigo })) ?? []}
             fases={fases?.map(f => ({ id: f.id, label: f.nome })) ?? []}
+            divisoes={divisoes?.map(d => ({ id: d.id, label: d.nome })) ?? undefined}
           />
         </Suspense>
       </div>

@@ -24,10 +24,11 @@ interface FilterOption {
 interface Props {
   apartamentos: FilterOption[]
   fases: FilterOption[]
+  divisoes?: FilterOption[]
   showApFilter?: boolean
 }
 
-export function ChecklistFilters({ apartamentos, fases, showApFilter = true }: Props) {
+export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter = true }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -110,6 +111,26 @@ export function ChecklistFilters({ apartamentos, fases, showApFilter = true }: P
           ))}
         </SelectContent>
       </Select>
+
+      {divisoes && divisoes.length > 0 && (
+        <Select
+          value={searchParams.get('divisao') ?? ALL}
+          onValueChange={(v: string | null) => {
+            const val = (v === null || v === ALL) ? null : v
+            setParam('divisao', val)
+          }}
+        >
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Divisão" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Todas as divisões</SelectItem>
+            {divisoes.map(d => (
+              <SelectItem key={d.id} value={String(d.id)}>{d.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       <Select
         value={searchParams.get('status') ?? ALL}

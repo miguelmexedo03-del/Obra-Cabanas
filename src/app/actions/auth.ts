@@ -28,31 +28,18 @@ export async function login(_prev: unknown, formData: FormData): Promise<ActionR
   redirect(redirectTo)
 }
 
-export async function signup(_prev: unknown, formData: FormData): Promise<ActionResult> {
-  const result = signupSchema.safeParse({
-    nome: formData.get('nome'),
-    email: formData.get('email'),
-    password: formData.get('password'),
-  })
+export async function signup(_prev: unknown, _formData: FormData): Promise<ActionResult> {
+  return { success: false, error: 'Registo público desativado. Pede acesso ao administrador.' }
+}
 
-  if (!result.success) {
-    return { success: false, error: result.error.issues[0].message }
-  }
-
+export async function changeOwnPassword(newPassword: string): Promise<ActionResult> {
+  if (newPassword.length < 8) return { success: false, error: 'Mínimo 8 caracteres.' }
   const supabase = await createClient()
-  const { error } = await supabase.auth.signUp({
-    email: result.data.email,
-    password: result.data.password,
-    options: {
-      data: { nome: result.data.nome },
-    },
-  })
-
-  if (error) {
-    return { success: false, error: 'Não foi possível criar a conta. Tenta novamente.' }
-  }
-
-  redirect('/')
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Não autenticado.' }
+  const { error } = await supabase.auth.updateUser({ password: newPassword })
+  if (error) return { success: false, error: error.message }
+  return { success: true }
 }
 
 export async function logout() {
