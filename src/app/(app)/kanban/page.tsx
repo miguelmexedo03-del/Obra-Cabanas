@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { KanbanBoard } from '@/components/kanban/kanban-board'
 import type { KanbanCardData } from '@/components/kanban/kanban-card'
+import { PageHeader } from '@/components/layout'
 
 export default async function KanbanPage() {
   const supabase = await createClient()
@@ -32,16 +33,11 @@ export default async function KanbanPage() {
       progresso: r.progresso ?? 0,
     }))
 
-  const canEdit = profile?.role === 'admin' || profile?.role === 'encarregado'
+  const canEdit = true
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Kanban — Obra Cabanas</h1>
-        <p className="text-sm text-muted-foreground">
-          {canEdit ? 'Arrasta os cartões para mudar de estado.' : 'Só leitura.'}
-        </p>
-      </div>
+      <PageHeader title="Kanban" description="Tarefas por estado" />
 
       <KanbanBoard cards={cards} canEdit={canEdit} />
     </div>

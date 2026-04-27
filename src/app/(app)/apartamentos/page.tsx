@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { PageHeader } from '@/components/layout'
 
 type ProgressoRow = {
   apartamento_id: number
@@ -24,12 +25,7 @@ export default async function ApartamentosPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Apartamentos</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          24 apartamentos — seleciona para ver o checklist
-        </p>
-      </div>
+      <PageHeader title="Apartamentos" description="24 unidades em reabilitação" />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {apartamentos?.map(ap => {

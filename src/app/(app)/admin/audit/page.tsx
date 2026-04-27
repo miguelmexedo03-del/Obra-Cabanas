@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { PageHeader } from '@/components/layout'
 
 type AuditRow = {
   id: number
@@ -72,12 +73,7 @@ export default async function AuditPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold">Histórico de alterações</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Últimas 200 alterações registadas automaticamente.
-        </p>
-      </div>
+      <PageHeader title="Auditoria" description="Últimas 200 alterações registadas automaticamente." />
 
       <div className="rounded-lg border overflow-hidden">
         <table className="w-full text-sm">

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Progress } from '@/components/ui/progress'
 import { KpiCard } from '@/components/dashboard/kpi-card'
+import { PageHeader } from '@/components/layout'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -48,10 +49,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">Obra Cabanas — visão geral</p>
-      </div>
+      <PageHeader title="Dashboard" description="Visão geral da obra" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard

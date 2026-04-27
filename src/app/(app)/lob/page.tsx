@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { LobView } from '@/components/lob/lob-view'
 import type { FaseParam, LobEntry } from '@/lib/lob'
+import { PageHeader } from '@/components/layout'
 
 export default async function LobPage() {
   const supabase = await createClient()
@@ -43,12 +44,7 @@ export default async function LobPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold">Line of Balance — Obra Cabanas</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Cronograma de fluxo de trabalho pelos 24 apartamentos. Ajusta o takt e as durações e clica em &quot;Calcular&quot;.
-        </p>
-      </div>
+      <PageHeader title="Line of Balance" description='Cronograma de fluxo de trabalho pelos 24 apartamentos. Ajusta o takt e as durações e clica em "Calcular".' />
       <LobView fases={faseParams} actualEntries={actualEntries} />
     </div>
   )

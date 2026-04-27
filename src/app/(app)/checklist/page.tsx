@@ -1,9 +1,11 @@
 import { Suspense } from 'react'
+import { ListChecks } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { ChecklistFilters } from '@/components/checklist/checklist-filters'
 import { ChecklistItem } from '@/components/checklist/checklist-item'
 import { RealtimeRefresh } from '@/components/shared/realtime-refresh'
 import { sanitizeIlikePattern } from '@/lib/utils'
+import { PageHeader, EmptyState } from '@/components/layout'
 
 interface Props {
   searchParams: Promise<{
@@ -69,13 +71,15 @@ async function ChecklistContent({ searchParams }: Props) {
 
   if (!elementos?.length) {
     return (
-      <div className="text-center py-16">
-        <p className="text-sm text-muted-foreground">
-          {Object.keys(params).length === 0
+      <EmptyState
+        icon={ListChecks}
+        title="Nenhum item encontrado"
+        description={
+          Object.keys(params).length === 0
             ? 'Seleciona um apartamento ou usa a pesquisa para ver itens.'
-            : 'Nenhum item encontrado com os filtros selecionados.'}
-        </p>
-      </div>
+            : 'Ajusta os filtros para ver resultados.'
+        }
+      />
     )
   }
 
@@ -149,12 +153,7 @@ export default async function ChecklistPage({ searchParams }: Props) {
   return (
     <div>
       <RealtimeRefresh table="elementos" />
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Checklist global</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Filtra por apartamento, fase, estado ou pesquisa direta
-        </p>
-      </div>
+      <PageHeader title="Checklist global" />
 
       <div className="mb-4">
         <Suspense>

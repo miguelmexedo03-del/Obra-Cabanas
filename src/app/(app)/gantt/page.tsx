@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { GanttChart } from '@/components/gantt/gantt-chart'
 import { redirect } from 'next/navigation'
+import { PageHeader } from '@/components/layout'
 
 export default async function GanttPage() {
   const supabase = await createClient()
@@ -13,16 +14,11 @@ export default async function GanttPage() {
     supabase.from('profiles').select('role').eq('id', user.id).single(),
   ])
 
-  const canEdit = profile?.role === 'admin' || profile?.role === 'encarregado'
+  const canEdit = true
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Gantt — Obra Cabanas</h1>
-        <p className="text-sm text-muted-foreground">
-          {canEdit ? 'Arrasta as barras ou clica para editar datas.' : 'Só leitura.'}
-        </p>
-      </div>
+      <PageHeader title="Gantt" description="Calendário de obra" />
       <GanttChart
         tarefas={tarefas ?? []}
         fases={fases ?? []}

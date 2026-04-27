@@ -8,6 +8,8 @@ import { ChecklistItem } from '@/components/checklist/checklist-item'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { sanitizeIlikePattern } from '@/lib/utils'
+import { PageHeader, EmptyState } from '@/components/layout'
+import { ListChecks } from 'lucide-react'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -103,33 +105,30 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
 
   return (
     <div>
-      {/* Back + header */}
-      <div className="mb-6">
-        <Link
-          href="/apartamentos"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3"
-        >
-          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-          Apartamentos
-        </Link>
+      {/* Back link */}
+      <Link
+        href="/apartamentos"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-3"
+      >
+        <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+        Apartamentos
+      </Link>
 
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold">{ap.codigo}</h1>
-            {ap.descricao && (
-              <p className="text-sm text-muted-foreground mt-0.5">{ap.descricao}</p>
-            )}
-          </div>
-          <Badge variant="secondary" className="text-sm shrink-0 mt-1">
+      {/* Header */}
+      <PageHeader
+        title={ap.codigo}
+        description={ap.descricao ?? undefined}
+        actions={
+          <Badge variant="secondary" className="text-sm">
             {Math.round(pct)}%
           </Badge>
-        </div>
+        }
+      />
 
-        <Progress value={pct} className="mt-3 h-1.5" />
-        <p className="text-xs text-muted-foreground mt-1.5">
-          {progresso?.concluidos ?? 0} / {progresso?.total ?? 0} itens concluídos
-        </p>
-      </div>
+      <Progress value={pct} className="mb-6 h-1.5" />
+      <p className="text-xs text-muted-foreground mb-6">
+        {progresso?.concluidos ?? 0} / {progresso?.total ?? 0} itens concluídos
+      </p>
 
       {/* Filters */}
       <div className="mb-4">
@@ -144,9 +143,7 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
 
       {/* List */}
       {groups.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-sm text-muted-foreground">Nenhum item encontrado.</p>
-        </div>
+        <EmptyState icon={ListChecks} title="Nenhum item encontrado" description="Ajusta os filtros para ver resultados." />
       ) : (
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground">{totalFiltered} itens</p>
