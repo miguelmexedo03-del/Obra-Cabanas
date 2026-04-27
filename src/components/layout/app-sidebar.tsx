@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Building2, ListChecks, GanttChartSquare,
-  KanbanSquare, BarChart3, Users, FileClock, User,
+  KanbanSquare, BarChart3, Users, FileClock, User, LucideIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import { NavItem } from './nav-item'
@@ -16,7 +16,7 @@ interface AppSidebarProps {
   role: string
 }
 
-const NAV: { href: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
+const NAV: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/apartamentos', label: 'Apartamentos', icon: Building2 },
   { href: '/checklist', label: 'Checklist', icon: ListChecks },
@@ -25,7 +25,7 @@ const NAV: { href: string; label: string; icon: typeof LayoutDashboard; exact?: 
   { href: '/lob', label: 'LoB', icon: BarChart3 },
 ]
 
-const ADMIN_NAV: { href: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
+const ADMIN_NAV: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
   { href: '/admin/users', label: 'Utilizadores', icon: Users },
   { href: '/admin/audit', label: 'Auditoria', icon: FileClock },
 ]
