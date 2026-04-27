@@ -8,14 +8,13 @@ Este ficheiro é o **contexto persistente** do projeto. Lê-o sempre antes de qu
 
 Aplicação web colaborativa para gerir uma obra de reabilitação de **24 apartamentos** no empreendimento "Cabanas" (Algarve). Substitui um workflow atual baseado em Excel (checklist + Gantt) por uma plataforma com base de dados partilhada, mobile-friendly, com atualização em tempo real.
 
-**Utilizadores-alvo (3 perfis):**
-- `admin` — Miguel (owner). CRUD total.
-- `encarregado` — chefe de obra. Lê tudo, edita checklist e datas.
-- `operario` — equipa no terreno. Lê o seu apartamento, mete ✓ em items do checklist. Não edita datas.
+**Utilizadores-alvo (2 perfis):**
+- `admin` — Miguel (owner). CRUD total + gestão de utilizadores.
+- `user` — qualquer colaborador autenticado. Vê e edita tudo (checklist, kanban, gantt, lob), não acede a `/admin/*`.
 
 **Constraints reais:**
 - Obra em construção civil, baixa digitalização, resistência à mudança.
-- Acesso maioritariamente via **telemóvel em obra** (sinal instável). Mobile-first obrigatório, offline-tolerant para leitura.
+- Web app é **desktop-only**; app nativa para mobile será desenvolvida separadamente, partilhando o mesmo Supabase.
 - **Português europeu (PT-PT)** em toda a UI. Código em inglês.
 - Audit trail obrigatório: quem fez check, quando, em que item. Construção tem implicações de responsabilidade.
 
@@ -30,7 +29,6 @@ Aplicação web colaborativa para gerir uma obra de reabilitação de **24 apart
 - **Data fetching:** Server Components + `@tanstack/react-query` para estado do cliente
 - **Forms:** `react-hook-form` + `zod` para validação
 - **Deploy:** Vercel (frontend) + Supabase Cloud (backend)
-- **PWA:** `next-pwa` para service worker e cache offline
 
 **Nunca propor:** outros frameworks (Vue, Svelte), outras BDs (Firebase, MongoDB), outros ORMs (Prisma, Drizzle) — a escolha já foi feita para maximizar velocidade com o stack que o Miguel vai ter de aprender.
 
@@ -82,9 +80,8 @@ Relações-chave:
 Teto → Remendos Teto → Pintura Teto → Paredes → Remendo Paredes → Pintura Paredes → Portas → Móveis → Eletrodomésticos → Chão/Rodapé → WC Equipamentos
 
 **Permissões (RLS):**
-- `operario` só vê e edita checklist do(s) apartamento(s) atribuído(s) (tabela `apartamento_operario`)
-- `encarregado` vê e edita tudo, exceto gestão de utilizadores
-- `admin` tudo
+- `user` — vê e edita tudo (checklist, kanban, gantt, lob). Não acede a `/admin/*`.
+- `admin` — tudo, incluindo gestão de utilizadores em `/admin/users` e auditoria.
 
 **Audit log:** trigger Postgres em INSERT/UPDATE de `elementos` e `tarefas_gantt`. Regista `user_id`, `timestamp`, `old_value`, `new_value`, `action`.
 
@@ -167,7 +164,7 @@ O trabalho está dividido em 8 milestones. Completa-os por ordem. Não saltes mi
 - **M4** — Kanban: view SQL + UI com dnd-kit. Colunas: Por Fazer / Em Curso / Bloqueado / Concluído.
 - **M5** — LoB + Dashboard: página LoB (takt + durações → cronograma calculado), dashboard com KPIs (% obra, bottleneck, AP mais atrasado).
 - **M6** — Realtime + Audit: subscriptions Supabase para updates em tempo real, trigger de audit log, página de histórico.
-- **M7** — PWA + Mobile: manifest, service worker, offline read, UI mobile-otimizada (cards em vez de tabelas).
+- **M7** ✅ — Desktop UI overhaul: sidebar lateral, primitives (PageHeader/EmptyState), toasts (sonner) em todas as mutations, gestão de utilizadores (admin), magic links, profile page, signup público desativado, roles simplificados para admin|user, filtro de divisão contextual na checklist, limpeza de elementos órfãos.
 - **M8** — Deploy: Vercel, Supabase prod, env vars, custom domain, documentação de operação.
 
 ---
