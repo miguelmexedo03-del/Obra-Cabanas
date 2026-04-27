@@ -13,7 +13,7 @@ import { ListChecks } from 'lucide-react'
 
 interface Props {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ fase?: string; status?: string; q?: string }>
+  searchParams: Promise<{ fase?: string; status?: string; q?: string; divisao?: string }>
 }
 
 type RawElemento = {
@@ -51,12 +51,14 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
 
   type FaseRow = { id: number; nome: string; cor_hex: string; ordem: number }
 
-  const [fasesResult, progressoResult] = await Promise.all([
+  const [fasesResult, progressoResult, divisoesResult] = await Promise.all([
     supabase.from('fases').select('id, nome, cor_hex, ordem').order('ordem'),
     supabase.from('progresso_por_apartamento').select('*').eq('apartamento_id', apId).single(),
+    supabase.from('divisoes').select('id, nome, ordem').eq('apartamento_id', apId).order('ordem'),
   ])
   const fases = fasesResult.data as FaseRow[] | null
   const progresso = progressoResult.data as ProgressoRow | null
+  const divisoes = divisoesResult.data as { id: number; nome: string; ordem: number }[] | null
 
   if (!ap) notFound()
 
@@ -73,6 +75,7 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
     .not('divisao_id', 'is', null)
 
   if (filters.fase) query = query.eq('fase_id', Number(filters.fase))
+  if (filters.divisao) query = query.eq('divisao_id', Number(filters.divisao))
   if (filters.status === 'checked') query = query.eq('concluido', true)
   if (filters.status === 'unchecked') query = query.eq('concluido', false)
   if (filters.q?.trim()) {
@@ -137,6 +140,7 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
           <ChecklistFilters
             apartamentos={[]}
             fases={fases?.map(f => ({ id: f.id, label: f.nome })) ?? []}
+            divisoes={divisoes?.map(d => ({ id: d.id, label: d.nome })) ?? []}
             showApFilter={false}
           />
         </Suspense>
