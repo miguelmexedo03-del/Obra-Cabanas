@@ -13,6 +13,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 
+// Sentinel for "show all" — @base-ui/react/select rejects empty-string values
+const ALL = '__all__'
+
 interface FilterOption {
   id: number
   label: string
@@ -35,12 +38,25 @@ export function ChecklistFilters({ apartamentos, fases, showApFilter = true }: P
   const setParam = useCallback(
     (key: string, value: string | null) => {
       const params = new URLSearchParams(searchParams.toString())
-      if (value) params.set(key, value)
-      else params.delete(key)
+      if (value === null || value === ALL) params.delete(key)
+      else params.set(key, value)
       startTransition(() => router.replace(`${pathname}?${params.toString()}`))
     },
     [router, pathname, searchParams]
   )
+
+  // AP change also clears the divisao filter — without AP, divisao makes no sense
+  function handleApChange(v: string | null) {
+    const params = new URLSearchParams(searchParams.toString())
+    if (v === null || v === ALL) {
+      params.delete('ap')
+      params.delete('divisao')
+    } else {
+      params.set('ap', v)
+      params.delete('divisao')
+    }
+    startTransition(() => router.replace(`${pathname}?${params.toString()}`))
+  }
 
   function handleSearch(value: string) {
     setSearchValue(value)
@@ -61,14 +77,14 @@ export function ChecklistFilters({ apartamentos, fases, showApFilter = true }: P
     <div className="flex flex-wrap gap-2 items-center">
       {showApFilter && (
         <Select
-          value={searchParams.get('ap') ?? ''}
-          onValueChange={(v: string | null) => setParam('ap', v || null)}
+          value={searchParams.get('ap') ?? ALL}
+          onValueChange={handleApChange}
         >
           <SelectTrigger className="w-[130px]">
             <SelectValue placeholder="Apartamento" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos os APs</SelectItem>
+            <SelectItem value={ALL}>Todos os APs</SelectItem>
             {apartamentos.map(a => (
               <SelectItem key={a.id} value={String(a.id)}>
                 {a.label}
@@ -79,14 +95,14 @@ export function ChecklistFilters({ apartamentos, fases, showApFilter = true }: P
       )}
 
       <Select
-        value={searchParams.get('fase') ?? ''}
-        onValueChange={(v: string | null) => setParam('fase', v || null)}
+        value={searchParams.get('fase') ?? ALL}
+        onValueChange={(v: string | null) => setParam('fase', v === ALL ? null : v)}
       >
         <SelectTrigger className="w-[140px]">
           <SelectValue placeholder="Fase" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Todas as fases</SelectItem>
+          <SelectItem value={ALL}>Todas as fases</SelectItem>
           {fases.map(f => (
             <SelectItem key={f.id} value={String(f.id)}>
               {f.label}
@@ -96,14 +112,14 @@ export function ChecklistFilters({ apartamentos, fases, showApFilter = true }: P
       </Select>
 
       <Select
-        value={searchParams.get('status') ?? ''}
-        onValueChange={(v: string | null) => setParam('status', v || null)}
+        value={searchParams.get('status') ?? ALL}
+        onValueChange={(v: string | null) => setParam('status', v === ALL ? null : v)}
       >
         <SelectTrigger className="w-[130px]">
           <SelectValue placeholder="Estado" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Todos</SelectItem>
+          <SelectItem value={ALL}>Todos</SelectItem>
           <SelectItem value="unchecked">Por fazer</SelectItem>
           <SelectItem value="checked">Concluídos</SelectItem>
         </SelectContent>
