@@ -198,3 +198,28 @@ O Miguel é estudante de mestrado em Supply Chain, junior em engenharia industri
 4. **Environment separado.** `development` local, `preview` em Vercel para branches, `production` para `main`.
 5. **Nunca commit de `.env.local`.** Verifica o `.gitignore` em cada milestone.
 6. **Atualiza este CLAUDE.md** quando tomares decisões arquiteturais novas. É o ficheiro de memória do projeto.
+
+---
+
+## 11. Gotchas Técnicos (aprendidos em M7)
+
+**`@base-ui/react` Button com Link:**
+- Usar `render={<Link href="..." />}` (não `asChild`) — `asChild` não existe nesta lib.
+- Sempre adicionar `nativeButton={false}` quando render não é `<button>`, senão há warning de acessibilidade.
+- `AlertDialogTrigger` segue o mesmo padrão: `render={<Button variant="destructive" />}`.
+
+**Zod v4 + react-hook-form:**
+- `ZodError` usa `.issues` não `.errors` em Server Actions.
+- Não usar `.default()` no schema zod quando usado com `zodResolver` — causa type mismatch input/output. Pôr defaults só em `useForm({ defaultValues: {...} })`.
+
+**Postgres ENUM:**
+- Não se pode UPDATE para um valor ENUM que ainda não existe. Primeiro: `ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'novo_valor';` (fora de transação), depois o UPDATE.
+
+**Git worktrees + `.env.local`:**
+- O `.env.local` NÃO é herdado do diretório pai. Copiar manualmente para cada worktree em `obra-cabanas-app/.worktrees/<branch>/.env.local`.
+
+**Next.js 15 `searchParams`:**
+- É uma `Promise` — sempre `const params = await searchParams` antes de usar.
+
+**AppSidebar como Client Component:**
+- `AppSidebar` tem `'use client'` porque recebe LucideIcons como props (funções) — Server Components não podem passar funções para Client Components.
