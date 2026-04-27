@@ -47,6 +47,9 @@ next-env.d.ts
 .supabase/
 supabase/.temp/
 
+# worktrees
+.worktrees/
+
 # python
 __pycache__/
 *.py[cod]
