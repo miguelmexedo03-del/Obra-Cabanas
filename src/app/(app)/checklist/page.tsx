@@ -52,6 +52,7 @@ async function ChecklistContent({ searchParams }: Props) {
     .order('apartamento_id')
     .order('divisao_id')
     .order('id')
+    .not('divisao_id', 'is', null)
     .limit(500)
 
   if (params.ap) query = query.eq('apartamento_id', Number(params.ap))
@@ -87,7 +88,7 @@ async function ChecklistContent({ searchParams }: Props) {
   const groupMap = new Map<string, Group>()
   for (const el of elementos) {
     const apCodigo = el.apartamentos?.codigo ?? `AP${el.apartamento_id}`
-    const divisaoNome = el.divisoes?.nome ?? 'Sem divisão'
+    const divisaoNome = el.divisoes?.nome ?? '—'
     const faseColor = el.fases?.cor_hex ?? '#888888'
     const key = `${el.apartamento_id}__${el.divisao_id ?? 'null'}`
 

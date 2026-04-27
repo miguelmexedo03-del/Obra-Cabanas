@@ -70,6 +70,7 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
     .eq('apartamento_id', apId)
     .order('divisao_id')
     .order('id')
+    .not('divisao_id', 'is', null)
 
   if (filters.fase) query = query.eq('fase_id', Number(filters.fase))
   if (filters.status === 'checked') query = query.eq('concluido', true)
@@ -88,7 +89,7 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
     if (!groupMap.has(key)) {
       groupMap.set(key, {
         id: el.divisao_id,
-        nome: el.divisoes?.nome ?? 'Sem divisão',
+        nome: el.divisoes?.nome ?? '—',
         faseColor: el.fases?.cor_hex ?? '#888888',
         concluidos: 0,
         items: [],
