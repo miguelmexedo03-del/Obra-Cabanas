@@ -453,7 +453,7 @@ export type Database = {
     Enums: {
       audit_action: "insert" | "update" | "delete"
       tarefa_status: "por_fazer" | "em_curso" | "bloqueado" | "concluido"
-      user_role: "admin" | "encarregado" | "operario"
+      user_role: "admin" | "encarregado" | "operario" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -583,7 +583,7 @@ export const Constants = {
     Enums: {
       audit_action: ["insert", "update", "delete"],
       tarefa_status: ["por_fazer", "em_curso", "bloqueado", "concluido"],
-      user_role: ["admin", "encarregado", "operario"],
+      user_role: ["admin", "encarregado", "operario", "user"],
     },
   },
 } as const
