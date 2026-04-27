@@ -1,7 +1,8 @@
 'use client'
 
-import { useOptimistic, useTransition, useState, useEffect } from 'react'
+import { useOptimistic, useTransition } from 'react'
 import { toggleElemento } from '@/app/actions/checklist'
+import { toast } from 'sonner'
 
 interface Props {
   id: number
@@ -14,13 +15,6 @@ interface Props {
 export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor }: Props) {
   const [optimistic, setOptimistic] = useOptimistic(concluido)
   const [isPending, startTransition] = useTransition()
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!error) return
-    const t = setTimeout(() => setError(null), 4000)
-    return () => clearTimeout(t)
-  }, [error])
 
   function handleChange() {
     const next = !optimistic
@@ -29,7 +23,8 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
       const result = await toggleElemento(id, next)
       if (!result.success) {
         setOptimistic(!next)
-        setError(result.error)
+        toast.error('Não foi possível atualizar', { description: result.error })
+        return
       }
     })
   }
@@ -85,11 +80,6 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
         )}
       </div>
     </label>
-    {error && (
-      <p role="alert" className="text-xs text-destructive px-4 pb-1">
-        {error}
-      </p>
-    )}
     </>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { toast } from 'sonner'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { updateTarefaSchema, type UpdateTarefaInput } from '@/lib/validations/gantt'
@@ -22,20 +22,18 @@ interface EditTarefaModalProps {
 }
 
 export function EditTarefaModal({ open, onOpenChange, tarefaId, nome, defaultValues, canEdit }: EditTarefaModalProps) {
-  const [serverError, setServerError] = useState<string | null>(null)
-
   const form = useForm<UpdateTarefaInput>({
     resolver: zodResolver(updateTarefaSchema),
     defaultValues,
   })
 
   async function onSubmit(data: UpdateTarefaInput) {
-    setServerError(null)
     const result = await updateTarefa(tarefaId, data)
     if (!result.success) {
-      setServerError(result.error)
+      toast.error('Não foi possível guardar', { description: result.error })
       return
     }
+    toast.success('Tarefa atualizada.')
     onOpenChange(false)
   }
 
@@ -127,9 +125,6 @@ export function EditTarefaModal({ open, onOpenChange, tarefaId, nome, defaultVal
                 </FormItem>
               )}
             />
-            {serverError && (
-              <p role="alert" className="text-sm text-destructive">{serverError}</p>
-            )}
             {canEdit && (
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

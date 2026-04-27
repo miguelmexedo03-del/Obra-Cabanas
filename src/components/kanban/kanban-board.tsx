@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useOptimistic, useTransition, useRef, useEffect, useCallback } from 'react'
+import { useState, useOptimistic, useTransition } from 'react'
+import { toast } from 'sonner'
 import { useRealtimeRefresh } from '@/hooks/use-realtime-refresh'
 import {
   DndContext,
@@ -33,12 +34,6 @@ export function KanbanBoard({ cards: initialCards, canEdit }: KanbanBoardProps) 
       state.map(c => (c.id === id ? { ...c, status } : c)),
   )
   const [activeCard, setActiveCard] = useState<KanbanCardData | null>(null)
-  const [dragError, setDragError] = useState<string | null>(null)
-  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => () => {
-    if (errorTimerRef.current) clearTimeout(errorTimerRef.current)
-  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -52,7 +47,6 @@ export function KanbanBoard({ cards: initialCards, canEdit }: KanbanBoardProps) 
   function handleDragStart(event: DragStartEvent) {
     const card = optimisticCards.find(c => c.id === event.active.id)
     setActiveCard(card ?? null)
-    setDragError(null)
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -72,21 +66,13 @@ export function KanbanBoard({ cards: initialCards, canEdit }: KanbanBoardProps) 
       updateOptimisticCards({ id: cardId, status: newStatus as Status })
       const result = await updateTarefa(cardId, { status: newStatus as Status })
       if (!result.success) {
-        if (errorTimerRef.current) clearTimeout(errorTimerRef.current)
-        setDragError(`Erro ao guardar: ${result.error}`)
-        errorTimerRef.current = setTimeout(() => setDragError(null), 4000)
+        toast.error('Erro ao guardar', { description: result.error })
       }
     })
   }
 
   return (
     <div className="space-y-3">
-      {dragError && (
-        <p role="alert" className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
-          {dragError}
-        </p>
-      )}
-
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
           {STATUSES.map(status => (
