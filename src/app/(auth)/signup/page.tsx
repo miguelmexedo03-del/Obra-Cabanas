@@ -8,7 +8,7 @@ export default function SignupDisabledPage() {
       <p className="text-sm text-muted-foreground">
         As contas são criadas pelo administrador da obra. Pede o teu acesso ao responsável.
       </p>
-      <Button variant="outline" render={<Link href="/login" />}>
+      <Button variant="outline" render={<Link href="/login" />} nativeButton={false}>
         Voltar ao login
       </Button>
     </div>

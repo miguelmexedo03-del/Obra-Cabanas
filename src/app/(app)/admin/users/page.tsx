@@ -28,7 +28,7 @@ export default async function UsersPage() {
         title="Utilizadores"
         description="Gestão de acesso e permissões."
         actions={
-          <Button render={<Link href="/admin/users/new" />}>
+          <Button render={<Link href="/admin/users/new" />} nativeButton={false}>
             <Plus className="h-4 w-4 mr-2" /> Novo
           </Button>
         }
@@ -59,7 +59,7 @@ export default async function UsersPage() {
                       : 'Nunca'}
                   </td>
                   <td className="px-4 py-2.5 text-right">
-                    <Button variant="ghost" size="sm" render={<Link href={`/admin/users/${u.id}`} />}>
+                    <Button variant="ghost" size="sm" render={<Link href={`/admin/users/${u.id}`} />} nativeButton={false}>
                       Editar
                     </Button>
                   </td>

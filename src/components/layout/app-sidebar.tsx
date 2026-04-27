@@ -1,3 +1,4 @@
+'use client'
 import {
   LayoutDashboard, Building2, ListChecks, GanttChartSquare,
   KanbanSquare, BarChart3, Users, FileClock, User, LucideIcon,
