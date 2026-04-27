@@ -8,10 +8,9 @@ export default async function GanttPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: tarefas }, { data: fases }, { data: profile }] = await Promise.all([
+  const [{ data: tarefas }, { data: fases }] = await Promise.all([
     supabase.from('tarefas_gantt').select('*').order('apartamento_id').order('nivel'),
     supabase.from('fases').select('id, nome, cor_hex').order('ordem'),
-    supabase.from('profiles').select('role').eq('id', user.id).single(),
   ])
 
   const canEdit = true

@@ -9,14 +9,11 @@ export default async function KanbanPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: rawCards }, { data: profile }] = await Promise.all([
-    supabase
-      .from('kanban_cards')
-      .select('id, apartamento_codigo, fase_nome, fase_cor, inicio, fim, status, responsavel_nome, progresso')
-      .order('apartamento_id')
-      .order('fase_id'),
-    supabase.from('profiles').select('role').eq('id', user.id).single(),
-  ])
+  const { data: rawCards } = await supabase
+    .from('kanban_cards')
+    .select('id, apartamento_codigo, fase_nome, fase_cor, inicio, fim, status, responsavel_nome, progresso')
+    .order('apartamento_id')
+    .order('fase_id')
 
   // View columns are all nullable in generated types; filter incomplete rows
   const cards: KanbanCardData[] = (rawCards ?? [])

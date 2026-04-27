@@ -153,7 +153,10 @@ export default async function ChecklistPage({ searchParams }: Props) {
   return (
     <div>
       <RealtimeRefresh table="elementos" />
-      <PageHeader title="Checklist global" />
+      <PageHeader
+        title="Checklist global"
+        description="Filtra por apartamento, fase, estado ou pesquisa direta"
+      />
 
       <div className="mb-4">
         <Suspense>
