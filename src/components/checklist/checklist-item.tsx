@@ -24,14 +24,11 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
       if (!result.success) {
         setOptimistic(!next)
         toast.error('Não foi possível atualizar', { description: result.error })
-        return
       }
     })
   }
 
   return (
-    <>
-    {/* min-h-[44px] ensures 44px touch target as per Apple HIG / WCAG 2.5.5 */}
     <label
       className={`flex items-start gap-3 px-4 py-3 min-h-[44px] cursor-pointer
         rounded-md transition-colors hover:bg-muted/40 active:bg-muted/60
@@ -43,9 +40,8 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
           checked={optimistic}
           onChange={handleChange}
           className="sr-only"
-          aria-label={elemento}
+          aria-label={sub_elemento ? `${elemento} — ${sub_elemento}` : elemento}
         />
-        {/* Custom checkbox — 20×20px visual, inside 44px touch label */}
         <div
           className={`w-5 h-5 rounded border-2 flex items-center justify-center
             transition-all duration-150
@@ -54,13 +50,7 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
           aria-hidden="true"
         >
           {optimistic && (
-            <svg
-              className="w-3 h-3 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={3}
-            >
+            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           )}
@@ -68,18 +58,25 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
       </div>
 
       <div className="flex-1 min-w-0">
-        <p
-          className={`text-sm leading-relaxed break-words ${
+        {sub_elemento ? (
+          <>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide leading-tight mb-0.5">
+              {elemento}
+            </p>
+            <p className={`text-sm leading-relaxed break-words ${
+              optimistic ? 'line-through text-muted-foreground' : 'text-foreground/90'
+            }`}>
+              {sub_elemento}
+            </p>
+          </>
+        ) : (
+          <p className={`text-sm leading-relaxed break-words ${
             optimistic ? 'line-through text-muted-foreground' : 'text-foreground'
-          }`}
-        >
-          {elemento}
-        </p>
-        {sub_elemento && (
-          <p className="text-xs text-muted-foreground mt-0.5 break-words">{sub_elemento}</p>
+          }`}>
+            {elemento}
+          </p>
         )}
       </div>
     </label>
-    </>
   )
 }

@@ -1,104 +1,97 @@
 'use client'
 
 import {
-  addMonths, addWeeks, eachDayOfInterval, eachWeekOfInterval,
-  eachMonthOfInterval, format, isSameDay, startOfWeek
+  eachWeekOfInterval, format, isSameDay, startOfWeek, getQuarter, getYear
 } from 'date-fns'
 import { pt } from 'date-fns/locale'
-import { Button } from '@/components/ui/button'
 
-export type ZoomLevel = 'dia' | 'semana' | 'mes'
+export const COL_WIDTH = 56
+export const PX_PER_DAY = COL_WIDTH / 7
 
-export const COL_WIDTH: Record<ZoomLevel, number> = {
-  dia: 40,
-  semana: 20,
-  mes: 12,
+function groupConsecutive<T>(items: T[], keyFn: (item: T) => string): { key: string; count: number }[] {
+  const groups: { key: string; count: number }[] = []
+  for (const item of items) {
+    const k = keyFn(item)
+    if (groups.length && groups[groups.length - 1].key === k) {
+      groups[groups.length - 1].count++
+    } else {
+      groups.push({ key: k, count: 1 })
+    }
+  }
+  return groups
 }
 
 interface GanttHeaderProps {
   viewStart: Date
   viewEnd: Date
-  zoom: ZoomLevel
-  onZoomChange: (z: ZoomLevel) => void
   nameColWidth: number
 }
 
-export function GanttHeader({ viewStart, viewEnd, zoom, onZoomChange, nameColWidth }: GanttHeaderProps) {
-  const colW = COL_WIDTH[zoom]
+export function GanttHeader({ viewStart, viewEnd, nameColWidth }: GanttHeaderProps) {
   const today = new Date()
-
-  type Label = { label: string; date: Date; isToday: boolean }
-  let labels: Label[] = []
-
-  if (zoom === 'dia') {
-    labels = eachDayOfInterval({ start: viewStart, end: viewEnd }).map(d => ({
-      label: format(d, 'd', { locale: pt }),
-      date: d,
-      isToday: isSameDay(d, today),
-    }))
-  } else if (zoom === 'semana') {
-    const weeks = eachWeekOfInterval({ start: viewStart, end: viewEnd }, { weekStartsOn: 1 })
-    labels = weeks.map(d => ({
-      label: format(d, 'dd/MM', { locale: pt }),
-      date: d,
-      isToday: false,
-    }))
-    // marcar semana atual
-    const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 1 })
-    labels = labels.map(l => ({ ...l, isToday: isSameDay(l.date, startOfCurrentWeek) }))
-  } else {
-    labels = eachMonthOfInterval({ start: viewStart, end: viewEnd }).map(d => ({
-      label: format(d, 'MMM yy', { locale: pt }),
-      date: d,
-      isToday: d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear(),
-    }))
-  }
+  const weeks = eachWeekOfInterval({ start: viewStart, end: viewEnd }, { weekStartsOn: 1 })
+  const quarterGroups = groupConsecutive(weeks, w => `Q${getQuarter(w)} ${getYear(w)}`)
+  const monthGroups = groupConsecutive(weeks, w => format(w, 'yyyy-MM'))
+  const currentWeekStart = startOfWeek(today, { weekStartsOn: 1 })
 
   return (
-    <div className="flex items-stretch border-b sticky top-0 bg-background z-10 shadow-sm">
-      {/* Coluna de nomes + zoom */}
-      <div
-        className="shrink-0 flex items-center px-3 gap-2 border-r bg-muted/30"
-        style={{ width: nameColWidth }}
-      >
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex-1">
-          Apartamento
-        </span>
-        <div className="flex gap-0.5">
-          {(['dia', 'semana', 'mes'] as ZoomLevel[]).map(z => (
-            <Button
-              key={z}
-              size="sm"
-              variant={zoom === z ? 'default' : 'ghost'}
-              className="h-6 px-2 text-xs capitalize"
-              onClick={() => onZoomChange(z)}
-            >
-              {z === 'dia' ? 'Dia' : z === 'semana' ? 'Sem' : 'Mês'}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Colunas de tempo */}
-      <div className="flex overflow-hidden">
-        {labels.map(({ label, date, isToday }) => (
+    <div className="sticky top-0 z-10 shadow-sm select-none">
+      {/* Row 1: Quarters */}
+      <div className="flex border-b border-slate-600">
+        <div className="shrink-0 bg-slate-800 border-r border-slate-600" style={{ width: nameColWidth }} />
+        {quarterGroups.map(({ key, count }) => (
           <div
-            key={date.toISOString()}
-            className={cn(
-              'shrink-0 border-r text-center text-xs py-1 text-muted-foreground',
-              isToday && 'bg-red-50 text-red-600 font-semibold'
-            )}
-            style={{ width: colW }}
+            key={key}
+            className="shrink-0 text-center text-xs font-bold bg-slate-800 text-slate-100 border-r border-slate-600 py-1 truncate"
+            style={{ width: count * COL_WIDTH }}
           >
-            {label}
+            {key}
           </div>
         ))}
+      </div>
+      {/* Row 2: Months */}
+      <div className="flex border-b border-slate-500">
+        <div className="shrink-0 bg-slate-700 border-r border-slate-500" style={{ width: nameColWidth }} />
+        {monthGroups.map(({ key, count }) => (
+          <div
+            key={key}
+            className="shrink-0 text-center text-xs font-semibold bg-slate-700 text-slate-100 border-r border-slate-500 py-1 truncate"
+            style={{ width: count * COL_WIDTH }}
+          >
+            {format(new Date(key + '-01'), 'MMMM', { locale: pt }).toUpperCase()}
+          </div>
+        ))}
+      </div>
+      {/* Row 3: Weeks */}
+      <div className="flex border-b border-slate-200">
+        <div
+          className="shrink-0 flex items-center px-3 border-r border-slate-200 bg-slate-100"
+          style={{ width: nameColWidth }}
+        >
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Apartamento</span>
+        </div>
+        {weeks.map(w => {
+          const isCurrentWeek = isSameDay(w, currentWeekStart)
+          return (
+            <div
+              key={w.toISOString()}
+              className={cn(
+                'shrink-0 border-r text-center text-[10px] py-1',
+                isCurrentWeek
+                  ? 'bg-emerald-500 text-white font-bold'
+                  : 'bg-slate-100 text-slate-500'
+              )}
+              style={{ width: COL_WIDTH }}
+            >
+              {format(w, 'dd/MM')}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
 
-// inline cn to avoid import issues in this file
 function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(' ')
 }

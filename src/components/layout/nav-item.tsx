@@ -22,13 +22,18 @@ export function NavItem({ href, label, icon: Icon, exact }: NavItemProps) {
       href={href}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors',
+        'flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all duration-150',
         active
-          ? 'bg-muted text-foreground font-medium'
-          : 'text-muted-foreground hover:text-foreground hover:bg-muted/60',
+          ? 'bg-slate-800 text-slate-100 font-medium'
+          : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200',
       )}
     >
-      <Icon className="h-4 w-4 shrink-0" />
+      <Icon
+        className={cn(
+          'h-4 w-4 shrink-0 transition-colors',
+          active ? 'text-emerald-400' : 'text-slate-500',
+        )}
+      />
       <span className="truncate">{label}</span>
     </Link>
   )

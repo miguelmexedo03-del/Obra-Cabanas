@@ -13,6 +13,7 @@ function LoginForm() {
   const [state, action, pending] = useActionState(login, null)
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirectTo') ?? '/'
+  const msg = searchParams.get('msg')
 
   return (
     <div className="rounded-lg border bg-card p-8 shadow-sm">
@@ -20,6 +21,12 @@ function LoginForm() {
         <h1 className="text-2xl font-semibold tracking-tight">Obra Cabanas</h1>
         <p className="text-sm text-muted-foreground mt-1">Entra na tua conta</p>
       </div>
+
+      {msg === 'confirma-email' && (
+        <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          Conta criada! Confirma o teu email antes de entrar.
+        </div>
+      )}
 
       <form action={action} className="space-y-4">
         <input type="hidden" name="redirectTo" value={redirectTo} />

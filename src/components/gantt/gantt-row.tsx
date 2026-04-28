@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import { ChevronRight } from 'lucide-react'
-import { parseISO } from 'date-fns'
 import { GanttBar } from './gantt-bar'
 import { EditTarefaModal } from './edit-tarefa-modal'
 import { cn } from '@/lib/utils'
-import { type ZoomLevel, COL_WIDTH } from './gantt-header'
 
 interface Tarefa {
   id: number
@@ -28,16 +26,16 @@ interface GanttRowProps {
   parent: Tarefa
   children: Tarefa[]
   faseMap: Record<number, FaseInfo>
-  zoom: ZoomLevel
+  colW: number
+  pxPerDay: number
   viewStart: Date
   nameColWidth: number
   canEdit: boolean
 }
 
-export function GanttRow({ parent, children, faseMap, zoom, viewStart, nameColWidth, canEdit }: GanttRowProps) {
+export function GanttRow({ parent, children, faseMap, colW, pxPerDay, viewStart, nameColWidth, canEdit }: GanttRowProps) {
   const [expanded, setExpanded] = useState(false)
   const [editTarefa, setEditTarefa] = useState<Tarefa | null>(null)
-  const colW = COL_WIDTH[zoom]
 
   // Calcular span agregado do AP (menor início + maior fim entre filhos com datas)
   const withDates = children.filter(c => c.inicio && c.fim)
@@ -50,14 +48,14 @@ export function GanttRow({ parent, children, faseMap, zoom, viewStart, nameColWi
 
   return (
     <>
-      {/* Linha pai (apartamento) */}
-      <div className="flex items-stretch border-b hover:bg-muted/30 h-10 transition-colors">
+      {/* Linha pai (apartamento) — estilo "Phase header" */}
+      <div className="flex items-stretch border-b border-slate-600 bg-slate-700 h-9">
         <div
-          className="shrink-0 flex items-center gap-1.5 px-3 text-sm font-semibold border-r cursor-pointer select-none"
+          className="shrink-0 flex items-center gap-1.5 px-3 text-sm font-semibold border-r border-slate-600 cursor-pointer select-none text-white"
           style={{ width: nameColWidth }}
           onClick={() => setExpanded(v => !v)}
         >
-          <ChevronRight className={cn('h-4 w-4 text-muted-foreground transition-transform shrink-0', expanded && 'rotate-90')} />
+          <ChevronRight className={cn('h-4 w-4 text-slate-300 transition-transform shrink-0', expanded && 'rotate-90')} />
           <span className="truncate">{apLabel}</span>
         </div>
         <div className="relative flex-1 overflow-hidden">
@@ -67,8 +65,8 @@ export function GanttRow({ parent, children, faseMap, zoom, viewStart, nameColWi
               nome=""
               inicio={aggregateBar.inicio}
               fim={aggregateBar.fim}
-              corHex="#64748b"
-              colWidthPx={colW}
+              corHex="#94a3b8"
+              pxPerDay={pxPerDay}
               viewStart={viewStart}
               canEdit={false}
               onEditClick={() => {}}
@@ -81,13 +79,13 @@ export function GanttRow({ parent, children, faseMap, zoom, viewStart, nameColWi
       {expanded && children.map(t => {
         const fase = t.fase_id ? faseMap[t.fase_id] : null
         return (
-          <div key={t.id} className="flex items-stretch border-b bg-muted/10 h-9 transition-colors hover:bg-muted/20">
+          <div key={t.id} className="flex items-stretch border-b border-slate-100 bg-white h-9 transition-colors hover:bg-slate-50">
             <div
-              className="shrink-0 flex items-center pl-8 pr-3 text-xs text-muted-foreground border-r truncate"
+              className="shrink-0 flex items-center pl-6 pr-3 text-xs font-medium text-slate-600 border-r border-slate-200 truncate"
               style={{ width: nameColWidth }}
             >
               <span
-                className="inline-block w-2 h-2 rounded-full mr-2 shrink-0"
+                className="inline-block w-2.5 h-2.5 rounded-sm mr-2 shrink-0"
                 style={{ backgroundColor: fase?.cor_hex ?? '#94a3b8' }}
               />
               {fase?.nome ?? t.nome}
@@ -99,7 +97,7 @@ export function GanttRow({ parent, children, faseMap, zoom, viewStart, nameColWi
                 inicio={t.inicio}
                 fim={t.fim}
                 corHex={fase?.cor_hex ?? '#94a3b8'}
-                colWidthPx={colW}
+                pxPerDay={pxPerDay}
                 viewStart={viewStart}
                 canEdit={canEdit}
                 onEditClick={() => setEditTarefa(t)}

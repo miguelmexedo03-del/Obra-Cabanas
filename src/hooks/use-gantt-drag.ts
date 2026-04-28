@@ -14,7 +14,7 @@ interface DragState {
 }
 
 interface UseDragOptions {
-  colWidthPx: number
+  pxPerDay: number
   onOptimisticUpdate: (inicio: string, fim: string) => void
   onRollback: () => void
 }
@@ -34,7 +34,7 @@ export function useGanttDrag(
   }, [inicio, fim])
 
   const computeDates = useCallback((d: DragState, deltaX: number): { newInicio: string; newFim: string } => {
-    const deltaDays = Math.round(deltaX / opts.colWidthPx)
+    const deltaDays = Math.round(deltaX / opts.pxPerDay)
     let newInicio = d.originalInicio
     let newFim = d.originalFim
 
@@ -49,7 +49,7 @@ export function useGanttDrag(
       if (candidate > d.originalInicio) newFim = candidate
     }
     return { newInicio, newFim }
-  }, [opts.colWidthPx])
+  }, [opts.pxPerDay])
 
   const onPointerMove = useCallback((e: React.PointerEvent) => {
     const d = dragRef.current
@@ -63,7 +63,7 @@ export function useGanttDrag(
     if (!d) return
     dragRef.current = null
     const deltaX = e.clientX - d.startX
-    if (Math.abs(deltaX) < opts.colWidthPx / 2) return // movimento insignificante
+    if (Math.abs(deltaX) < opts.pxPerDay / 2) return // movimento insignificante
 
     const { newInicio, newFim } = computeDates(d, deltaX)
     const result = await updateTarefa(tarefaId, { inicio: newInicio, fim: newFim })

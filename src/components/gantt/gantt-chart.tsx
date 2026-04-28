@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 import { addMonths, differenceInDays, startOfMonth, endOfMonth } from 'date-fns'
-import { GanttHeader, COL_WIDTH, type ZoomLevel } from './gantt-header'
+import { GanttHeader, COL_WIDTH, PX_PER_DAY } from './gantt-header'
 import { GanttRow } from './gantt-row'
 
 interface TarefaRow {
@@ -28,9 +28,7 @@ interface GanttChartProps {
   tarefas: TarefaRow[]
   fases: FaseInfo[]
   canEdit: boolean
-  /** Meses para trás a mostrar no viewport inicial */
   viewMonthsBack?: number
-  /** Meses para a frente a mostrar no viewport inicial */
   viewMonthsForward?: number
 }
 
@@ -40,15 +38,14 @@ export function GanttChart({
   tarefas,
   fases,
   canEdit,
-  viewMonthsBack = 1,
-  viewMonthsForward = 6,
+  viewMonthsBack = 0,
+  viewMonthsForward = 12,
 }: GanttChartProps) {
-  const [zoom, setZoom] = useState<ZoomLevel>('semana')
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const today = new Date()
   const viewStart = startOfMonth(addMonths(today, -viewMonthsBack))
   const viewEnd = endOfMonth(addMonths(today, viewMonthsForward))
-  const colW = COL_WIDTH[zoom]
 
   const faseMap = useMemo(
     () => Object.fromEntries(fases.map(f => [f.id, f])) as Record<number, FaseInfo>,
@@ -66,28 +63,37 @@ export function GanttChart({
     return map
   }, [tarefas])
 
-  // Posição da linha vertical de hoje (relativa ao início da área de timeline)
   const todayOffsetDays = differenceInDays(today, viewStart)
-  const todayLeft = NAME_COL_WIDTH + todayOffsetDays * colW
+  const todayLeft = NAME_COL_WIDTH + todayOffsetDays * PX_PER_DAY
+
+  // Auto-scroll para hoje ao montar
+  useEffect(() => {
+    if (scrollRef.current) {
+      const scrollTarget = Math.max(0, todayOffsetDays * PX_PER_DAY - 200)
+      scrollRef.current.scrollLeft = scrollTarget
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Largura mínima do conteúdo = coluna nomes + dias totais em px
+  const totalWidth = NAME_COL_WIDTH + differenceInDays(viewEnd, viewStart) * PX_PER_DAY + COL_WIDTH
 
   return (
-    <div className="relative border rounded-lg overflow-auto max-h-[75vh]">
+    <div ref={scrollRef} className="border border-slate-200 rounded-lg overflow-auto max-h-[80vh] bg-white">
+      <div className="relative" style={{ minWidth: totalWidth }}>
       <GanttHeader
         viewStart={viewStart}
         viewEnd={viewEnd}
-        zoom={zoom}
-        onZoomChange={setZoom}
         nameColWidth={NAME_COL_WIDTH}
       />
 
-      {/* Linha vermelha de hoje */}
+      {/* Linha verde de hoje */}
       <div
-        className="absolute top-0 bottom-0 w-px bg-red-400/70 pointer-events-none z-20"
+        className="absolute top-0 bottom-0 w-0.5 bg-emerald-500/90 pointer-events-none z-20"
         style={{ left: todayLeft }}
         aria-label="Hoje"
       />
 
-      {/* Linhas de apartamentos */}
       {parents.length === 0 ? (
         <div className="py-12 text-center text-muted-foreground text-sm">
           Sem tarefas Gantt. Recarrega a página.
@@ -99,13 +105,15 @@ export function GanttChart({
             parent={p}
             children={childrenByParent[p.id] ?? []}
             faseMap={faseMap}
-            zoom={zoom}
+            colW={COL_WIDTH}
+            pxPerDay={PX_PER_DAY}
             viewStart={viewStart}
             nameColWidth={NAME_COL_WIDTH}
             canEdit={canEdit}
           />
         ))
       )}
+      </div>
     </div>
   )
 }

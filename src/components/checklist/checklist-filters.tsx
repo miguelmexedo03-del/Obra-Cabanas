@@ -13,7 +13,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 
-// Sentinel for "show all" — @base-ui/react/select rejects empty-string values
 const ALL = '__all__'
 
 interface FilterOption {
@@ -39,17 +38,16 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
   const setParam = useCallback(
     (key: string, value: string | null) => {
       const params = new URLSearchParams(searchParams.toString())
-      if (value === null || value === ALL) params.delete(key)
+      if (value === null) params.delete(key)
       else params.set(key, value)
       startTransition(() => router.replace(`${pathname}?${params.toString()}`))
     },
     [router, pathname, searchParams]
   )
 
-  // AP change also clears the divisao filter — without AP, divisao makes no sense
-  function handleApChange(v: string | null) {
+  function handleApChange(v: string) {
     const params = new URLSearchParams(searchParams.toString())
-    if (v === null || v === ALL) {
+    if (v === ALL) {
       params.delete('ap')
       params.delete('divisao')
     } else {
@@ -78,11 +76,15 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
     <div className="flex flex-wrap gap-2 items-center">
       {showApFilter && (
         <Select
-          value={searchParams.get('ap') ?? ALL}
+          value={searchParams.get('ap') ?? undefined}
           onValueChange={handleApChange}
         >
-          <SelectTrigger className="w-[130px]">
-            <SelectValue placeholder="Apartamento" />
+          <SelectTrigger className="w-[140px]">
+            <SelectValue>
+              {searchParams.get('ap')
+                ? (apartamentos.find(a => String(a.id) === searchParams.get('ap'))?.label ?? 'Apartamento')
+                : <span className="text-muted-foreground">Apartamento</span>}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Todos os APs</SelectItem>
@@ -96,11 +98,15 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
       )}
 
       <Select
-        value={searchParams.get('fase') ?? ALL}
-        onValueChange={(v: string | null) => setParam('fase', v === ALL ? null : v)}
+        value={searchParams.get('fase') ?? undefined}
+        onValueChange={(v: string) => setParam('fase', v === ALL ? null : v)}
       >
         <SelectTrigger className="w-[140px]">
-          <SelectValue placeholder="Fase" />
+          <SelectValue>
+            {searchParams.get('fase')
+              ? (fases.find(f => String(f.id) === searchParams.get('fase'))?.label ?? 'Fase')
+              : <span className="text-muted-foreground">Fase</span>}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>Todas as fases</SelectItem>
@@ -114,14 +120,15 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
 
       {divisoes && divisoes.length > 0 && (
         <Select
-          value={searchParams.get('divisao') ?? ALL}
-          onValueChange={(v: string | null) => {
-            const val = (v === null || v === ALL) ? null : v
-            setParam('divisao', val)
-          }}
+          value={searchParams.get('divisao') ?? undefined}
+          onValueChange={(v: string) => setParam('divisao', v === ALL ? null : v)}
         >
           <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Divisão" />
+            <SelectValue>
+              {searchParams.get('divisao')
+                ? (divisoes.find(d => String(d.id) === searchParams.get('divisao'))?.label ?? 'Divisão')
+                : <span className="text-muted-foreground">Divisão</span>}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Todas as divisões</SelectItem>
@@ -133,11 +140,15 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
       )}
 
       <Select
-        value={searchParams.get('status') ?? ALL}
-        onValueChange={(v: string | null) => setParam('status', v === ALL ? null : v)}
+        value={searchParams.get('status') ?? undefined}
+        onValueChange={(v: string) => setParam('status', v === ALL ? null : v)}
       >
-        <SelectTrigger className="w-[130px]">
-          <SelectValue placeholder="Estado" />
+        <SelectTrigger className="w-[120px]">
+          <SelectValue>
+            {searchParams.get('status') === 'unchecked' ? 'Por fazer'
+              : searchParams.get('status') === 'checked' ? 'Concluídos'
+              : <span className="text-muted-foreground">Estado</span>}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>Todos</SelectItem>

@@ -11,7 +11,7 @@ interface GanttBarProps {
   inicio: string | null
   fim: string | null
   corHex: string
-  colWidthPx: number
+  pxPerDay: number
   viewStart: Date
   canEdit: boolean
   onEditClick: () => void
@@ -19,7 +19,7 @@ interface GanttBarProps {
 
 export function GanttBar({
   tarefaId, nome, inicio, fim, corHex,
-  colWidthPx, viewStart, canEdit, onEditClick,
+  pxPerDay, viewStart, canEdit, onEditClick,
 }: GanttBarProps) {
   const [, startTransition] = useTransition()
   const [optimistic, setOptimistic] = useOptimistic({ inicio, fim })
@@ -28,7 +28,7 @@ export function GanttBar({
   const { startDrag, onPointerMove, onPointerUp } = useGanttDrag(
     tarefaId, optimistic.inicio, optimistic.fim,
     {
-      colWidthPx,
+      pxPerDay,
       onOptimisticUpdate: (i, f) => startTransition(() => setOptimistic({ inicio: i, fim: f })),
       onRollback: () => {
         startTransition(() => setOptimistic({ inicio, fim }))
@@ -39,20 +39,23 @@ export function GanttBar({
   )
 
   if (!optimistic.inicio || !optimistic.fim) {
+    const label = optimistic.inicio && !optimistic.fim
+      ? `${nome} — falta data de fim (clica para definir duração)`
+      : `${nome} — sem datas`
     return (
       <div
         className="absolute inset-y-1 left-2 right-2 rounded border-2 border-dashed border-muted-foreground/30 flex items-center justify-center cursor-pointer text-xs text-muted-foreground hover:border-muted-foreground/60 transition-colors"
         onClick={onEditClick}
       >
-        {nome} — sem datas
+        {label}
       </div>
     )
   }
 
   const startOffset = differenceInDays(parseISO(optimistic.inicio), viewStart)
   const duration = differenceInDays(parseISO(optimistic.fim), parseISO(optimistic.inicio)) + 1
-  const left = startOffset * colWidthPx
-  const width = Math.max(duration * colWidthPx, colWidthPx)
+  const left = startOffset * pxPerDay
+  const width = Math.max(duration * pxPerDay, pxPerDay)
 
   const today = new Date().toISOString().slice(0, 10)
   const isOverdue = optimistic.fim < today

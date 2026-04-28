@@ -28,8 +28,33 @@ export async function login(_prev: unknown, formData: FormData): Promise<ActionR
   redirect(redirectTo)
 }
 
-export async function signup(_prev: unknown, _formData: FormData): Promise<ActionResult> {
-  return { success: false, error: 'Registo público desativado. Pede acesso ao administrador.' }
+export async function signup(_prev: unknown, formData: FormData): Promise<ActionResult> {
+  const result = signupSchema.safeParse({
+    nome: formData.get('nome'),
+    email: formData.get('email'),
+    password: formData.get('password'),
+  })
+
+  if (!result.success) {
+    return { success: false, error: result.error.issues[0].message }
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.signUp({
+    email: result.data.email,
+    password: result.data.password,
+    options: { data: { nome: result.data.nome } },
+  })
+
+  if (error) {
+    return { success: false, error: 'Não foi possível criar a conta. O email já pode estar registado.' }
+  }
+
+  // Se confirmação de email está desligada, session já existe → vai para a app
+  if (data.session) redirect('/')
+
+  // Se confirmação de email está ligada → redireciona para login com aviso
+  redirect('/login?msg=confirma-email')
 }
 
 export async function changeOwnPassword(newPassword: string): Promise<ActionResult> {
