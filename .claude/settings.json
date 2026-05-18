@@ -18,19 +18,19 @@
       "Edit",
       "Glob",
       "Grep",
-      "WebFetch(docs.claude.com)",
-      "WebFetch(nextjs.org)",
-      "WebFetch(supabase.com)",
-      "WebFetch(ui.shadcn.com)",
-      "WebFetch(tailwindcss.com)",
-      "WebFetch(react.dev)",
-      "WebFetch(tanstack.com)",
-      "WebFetch(zod.dev)",
-      "WebFetch(react-hook-form.com)",
-      "WebFetch(date-fns.org)",
-      "WebFetch(lucide.dev)",
-      "WebFetch(base-ui.com)",
-      "WebFetch(developer.mozilla.org)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:nextjs.org)",
+      "WebFetch(domain:supabase.com)",
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebFetch(domain:tailwindcss.com)",
+      "WebFetch(domain:react.dev)",
+      "WebFetch(domain:tanstack.com)",
+      "WebFetch(domain:zod.dev)",
+      "WebFetch(domain:react-hook-form.com)",
+      "WebFetch(domain:date-fns.org)",
+      "WebFetch(domain:lucide.dev)",
+      "WebFetch(domain:base-ui.com)",
+      "WebFetch(domain:developer.mozilla.org)",
       "Bash(kill-port:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
@@ -46,13 +46,14 @@
     "deny": [
       "Bash(rm -rf:*)",
       "Bash(sudo:*)",
-      "Bash(curl:* -X DELETE *)",
+
       "Read(**/.env.local)",
       "Read(**/.env.production)"
     ]
   },
   "env": {
-    "NEXT_TELEMETRY_DISABLED": "1"
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_your_token_here"
   },
   "outputStyle": "default",
   "includeCoAuthoredBy": false
