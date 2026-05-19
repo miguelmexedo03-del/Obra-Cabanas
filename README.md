@@ -125,3 +125,4 @@ supabase db reset   # CUIDADO: apaga tudo em dev e re-aplica
 ## Deploy
 
 Ver `DEPLOY.md` (será criado no M8).
+
