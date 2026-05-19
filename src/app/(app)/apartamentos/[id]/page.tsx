@@ -104,7 +104,7 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
   }
 
   const groups = Array.from(groupMap.values())
-  const pct = progresso?.percentagem ?? 0
+  const pct = (progresso?.percentagem ?? 0) * 100
   const totalFiltered = elementos?.length ?? 0
 
   return (

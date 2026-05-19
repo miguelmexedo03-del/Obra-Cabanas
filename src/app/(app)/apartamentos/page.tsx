@@ -30,7 +30,7 @@ export default async function ApartamentosPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {apartamentos?.map(ap => {
           const prog = progressMap.get(ap.id)
-          const pct = prog?.percentagem ?? 0
+          const pct = (prog?.percentagem ?? 0) * 100
           const concluidos = prog?.concluidos ?? 0
           const total = prog?.total ?? 0
 
