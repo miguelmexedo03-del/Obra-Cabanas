@@ -45,9 +45,9 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
     [router, pathname, searchParams]
   )
 
-  function handleApChange(v: string) {
+  function handleApChange(v: string | null) {
     const params = new URLSearchParams(searchParams.toString())
-    if (v === ALL) {
+    if (v === null || v === ALL) {
       params.delete('ap')
       params.delete('divisao')
     } else {
@@ -99,7 +99,7 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
 
       <Select
         value={searchParams.get('fase') ?? undefined}
-        onValueChange={(v: string) => setParam('fase', v === ALL ? null : v)}
+        onValueChange={(v: string | null) => setParam('fase', v === null || v === ALL ? null : v)}
       >
         <SelectTrigger className="w-[140px]">
           <SelectValue>
@@ -121,7 +121,7 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
       {divisoes && divisoes.length > 0 && (
         <Select
           value={searchParams.get('divisao') ?? undefined}
-          onValueChange={(v: string) => setParam('divisao', v === ALL ? null : v)}
+          onValueChange={(v: string | null) => setParam('divisao', v === null || v === ALL ? null : v)}
         >
           <SelectTrigger className="w-[160px]">
             <SelectValue>
@@ -141,7 +141,7 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
 
       <Select
         value={searchParams.get('status') ?? undefined}
-        onValueChange={(v: string) => setParam('status', v === ALL ? null : v)}
+        onValueChange={(v: string | null) => setParam('status', v === null || v === ALL ? null : v)}
       >
         <SelectTrigger className="w-[120px]">
           <SelectValue>
