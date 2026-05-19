@@ -166,7 +166,7 @@ Estado atual dos milestones:
 - **M5** ✅ — LoB + Dashboard: página LoB (takt + durações → cronograma calculado), dashboard com KPIs (% obra, bottleneck, AP mais atrasado).
 - **M6** ✅ — Realtime + Audit: subscriptions Supabase para updates em tempo real, trigger de audit log, página de histórico.
 - **M7** ~~PWA + Mobile~~ — **CANCELADO.** A app é desktop-only. App mobile será projeto separado no futuro com a mesma BD Supabase. Sem PWA, sem service workers.
-- **M8** — Deploy: Vercel, Supabase prod, env vars, custom domain, documentação de operação.
+- **M8** ✅ — Deploy: Vercel (obra-cabanas.vercel.app), Supabase prod, env vars, CI/CD via GitHub Integration.
 
 ---
 
