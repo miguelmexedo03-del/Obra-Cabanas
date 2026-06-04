@@ -29,7 +29,7 @@ Aplicação web colaborativa para gerir uma obra de reabilitação de **24 apart
 - **Data fetching:** Server Components + `@tanstack/react-query` para estado do cliente
 - **Forms:** `react-hook-form` + `zod` para validação
 - **Deploy:** Vercel (frontend) + Supabase Cloud (backend)
-- **Target:** **Desktop/PC only.** App mobile será um projeto separado no futuro, com a mesma BD Supabase. Não otimizar para mobile nesta app.
+- **Target:** **Desktop/PC only.** A app mobile já existe como projeto separado (`../cabanas-mobile/`, ver o CLAUDE.md de lá), partilhando a mesma BD Supabase. Não otimizar esta app para mobile.
 
 **Nunca propor:** outros frameworks (Vue, Svelte), outras BDs (Firebase, MongoDB), outros ORMs (Prisma, Drizzle), PWA/service workers — a escolha já foi feita.
 

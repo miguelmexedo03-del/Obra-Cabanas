@@ -31,6 +31,14 @@ const TABLE_LABEL: Record<string, string> = {
   tarefas_gantt: 'Gantt',
 }
 
+// Estados do Gantt em linguagem humana
+const STATUS_LABEL: Record<string, string> = {
+  por_fazer: 'Por fazer',
+  em_curso: 'Em curso',
+  bloqueado: 'Bloqueado',
+  concluido: 'Concluído',
+}
+
 function formatDate(ts: string) {
   return new Date(ts).toLocaleString('pt-PT', {
     day: '2-digit', month: '2-digit', year: 'numeric',
@@ -38,18 +46,78 @@ function formatDate(ts: string) {
   })
 }
 
-function diffValues(
-  old: Record<string, unknown> | null,
-  novo: Record<string, unknown> | null,
+function str(v: unknown): string | null {
+  return typeof v === 'string' ? v : null
+}
+function num(v: unknown): number | null {
+  return typeof v === 'number' ? v : null
+}
+
+// "AP13 · Cozinha · Teto — Parafuso" para Checklist; "AP2 · Portas" para Gantt
+function describeTarget(
+  row: AuditRow,
+  apMap: Map<number, string>,
+  divMap: Map<number, string>,
 ): string {
+  const snap = row.valores_novos ?? row.valores_antigos
+  if (!snap) return `${TABLE_LABEL[row.tabela] ?? row.tabela} #${row.registo_id}`
+
+  const apCodigo = apMap.get(num(snap.apartamento_id) ?? -1)
+
+  if (row.tabela === 'elementos') {
+    const divNome = divMap.get(num(snap.divisao_id) ?? -1)
+    const elemento = str(snap.elemento) ?? '—'
+    const sub = str(snap.sub_elemento)
+    const partes = [apCodigo, divNome, sub ? `${elemento} — ${sub}` : elemento].filter(Boolean)
+    return partes.join(' · ')
+  }
+
+  if (row.tabela === 'tarefas_gantt') {
+    const nome = str(snap.nome) ?? '—'
+    return [apCodigo, nome].filter(Boolean).join(' · ')
+  }
+
+  return `${TABLE_LABEL[row.tabela] ?? row.tabela} #${row.registo_id}`
+}
+
+// Mudança em linguagem humana
+function describeChange(row: AuditRow): string {
+  if (row.action === 'insert') return 'Novo registo'
+  if (row.action === 'delete') return 'Eliminado'
+
+  const old = row.valores_antigos
+  const novo = row.valores_novos
   if (!old || !novo) return ''
+
+  // Checklist: o que interessa é o concluido
+  if (row.tabela === 'elementos') {
+    if (old.concluido !== novo.concluido) {
+      return novo.concluido ? '✓ Marcou como concluído' : '↺ Reabriu (desmarcou)'
+    }
+  }
+
+  // Gantt: estado da tarefa
+  if (row.tabela === 'tarefas_gantt') {
+    if (old.status !== novo.status) {
+      const de = STATUS_LABEL[str(old.status) ?? ''] ?? String(old.status)
+      const para = STATUS_LABEL[str(novo.status) ?? ''] ?? String(novo.status)
+      return `Estado: ${de} → ${para}`
+    }
+    if (old.inicio !== novo.inicio || old.fim !== novo.fim) {
+      return 'Alterou datas'
+    }
+  }
+
+  // Fallback genérico: lista campos alterados (ignorando ruído)
+  const ignore = new Set(['updated_at', 'created_at', 'concluido_em', 'concluido_por'])
   const changed: string[] = []
   for (const key of Object.keys(novo)) {
-    if (old[key] !== novo[key] && key !== 'updated_at') {
+    if (ignore.has(key)) continue
+    if (old[key] !== novo[key]) {
       changed.push(`${key}: ${JSON.stringify(old[key])} → ${JSON.stringify(novo[key])}`)
     }
   }
-  return changed.slice(0, 3).join(' · ')
+  return changed.slice(0, 2).join(' · ') || 'Sem alterações relevantes'
 }
 
 export default async function AuditPage() {
@@ -65,11 +133,19 @@ export default async function AuditPage() {
 
   if (profile?.role !== 'admin') redirect('/')
 
-  const { data: logs } = await supabase
-    .from('audit_log')
-    .select('*, profiles(nome, email)')
-    .order('timestamp', { ascending: false })
-    .limit(200) as { data: AuditRow[] | null }
+  const [logsResult, apResult, divResult] = await Promise.all([
+    supabase
+      .from('audit_log')
+      .select('*, profiles(nome, email)')
+      .order('timestamp', { ascending: false })
+      .limit(200),
+    supabase.from('apartamentos').select('id, codigo'),
+    supabase.from('divisoes').select('id, nome'),
+  ])
+
+  const logs = logsResult.data as AuditRow[] | null
+  const apMap = new Map((apResult.data ?? []).map(a => [a.id, a.codigo]))
+  const divMap = new Map((divResult.data ?? []).map(d => [d.id, d.nome]))
 
   return (
     <div className="space-y-4">
@@ -82,8 +158,8 @@ export default async function AuditPage() {
               <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Quando</th>
               <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Utilizador</th>
               <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Ação</th>
-              <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Tabela</th>
-              <th className="text-left px-4 py-2.5 font-medium text-muted-foreground hidden md:table-cell">Alterações</th>
+              <th className="text-left px-4 py-2.5 font-medium text-muted-foreground">Onde</th>
+              <th className="text-left px-4 py-2.5 font-medium text-muted-foreground hidden md:table-cell">O que mudou</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -100,16 +176,16 @@ export default async function AuditPage() {
                     {ACTION_LABEL[row.action] ?? row.action}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 text-xs">
-                  {TABLE_LABEL[row.tabela] ?? row.tabela}
-                  <span className="text-muted-foreground ml-1">#{row.registo_id}</span>
+                <td className="px-4 py-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide shrink-0">
+                      {TABLE_LABEL[row.tabela] ?? row.tabela}
+                    </span>
+                    <span className="font-medium">{describeTarget(row, apMap, divMap)}</span>
+                  </div>
                 </td>
                 <td className="px-4 py-2.5 text-xs text-muted-foreground hidden md:table-cell max-w-xs truncate">
-                  {row.action === 'update'
-                    ? diffValues(row.valores_antigos, row.valores_novos)
-                    : row.action === 'insert'
-                    ? 'Novo registo'
-                    : 'Eliminado'}
+                  {describeChange(row)}
                 </td>
               </tr>
             ))}
