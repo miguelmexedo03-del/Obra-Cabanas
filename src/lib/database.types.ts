@@ -218,6 +218,38 @@ export type Database = {
           },
         ]
       }
+      evidencia_fotos: {
+        Row: {
+          criado_em: string
+          evidencia_id: string
+          id: string
+          storage_path: string
+          url_publica: string
+        }
+        Insert: {
+          criado_em?: string
+          evidencia_id: string
+          id?: string
+          storage_path: string
+          url_publica: string
+        }
+        Update: {
+          criado_em?: string
+          evidencia_id?: string
+          id?: string
+          storage_path?: string
+          url_publica?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidencia_fotos_evidencia_id_fkey"
+            columns: ["evidencia_id"]
+            isOneToOne: false
+            referencedRelation: "item_evidencias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fases: {
         Row: {
           cor_hex: string
@@ -241,6 +273,38 @@ export type Database = {
           ordem?: number
         }
         Relationships: []
+      }
+      item_evidencias: {
+        Row: {
+          criado_em: string
+          criado_por: string | null
+          elemento_id: number
+          id: string
+          texto: string | null
+        }
+        Insert: {
+          criado_em?: string
+          criado_por?: string | null
+          elemento_id: number
+          id?: string
+          texto?: string | null
+        }
+        Update: {
+          criado_em?: string
+          criado_por?: string | null
+          elemento_id?: number
+          id?: string
+          texto?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_evidencias_elemento_id_fkey"
+            columns: ["elemento_id"]
+            isOneToOne: false
+            referencedRelation: "elementos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
