@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ChevronLeft, Printer } from 'lucide-react'
+import { ChevronLeft, Printer, FileDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface Props {
@@ -48,6 +48,10 @@ export function RelatorioHeader({
         <Button size="sm" render={<a href={`/relatorio?ap=${ap.id}&print=1`} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
           <Printer className="h-4 w-4" />
           Exportar PDF
+        </Button>
+        <Button variant="outline" size="sm" render={<a href={`/relatorio/export?ap=${ap.id}`} />} nativeButton={false}>
+          <FileDown className="h-4 w-4" />
+          Exportar HTML
         </Button>
       </div>
     </div>
