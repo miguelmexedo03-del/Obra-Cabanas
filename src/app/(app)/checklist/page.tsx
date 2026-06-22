@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ChecklistFilters } from '@/components/checklist/checklist-filters'
 import { ChecklistItem } from '@/components/checklist/checklist-item'
 import { RealtimeRefresh } from '@/components/shared/realtime-refresh'
-import { sanitizeIlikePattern } from '@/lib/utils'
+import { sanitizeIlikePattern, sortElementos } from '@/lib/utils'
 import { PageHeader, EmptyState } from '@/components/layout'
 
 interface Props {
@@ -102,7 +102,10 @@ async function ChecklistContent({ searchParams }: Props) {
     if (el.concluido) group.concluidos++
   }
 
-  const groups = Array.from(groupMap.values())
+  const groups = Array.from(groupMap.values()).map(g => ({
+    ...g,
+    items: sortElementos(g.items),
+  }))
 
   return (
     <div className="space-y-3">

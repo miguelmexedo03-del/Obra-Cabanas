@@ -7,7 +7,7 @@ import { ChecklistFilters } from '@/components/checklist/checklist-filters'
 import { ChecklistItem } from '@/components/checklist/checklist-item'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { sanitizeIlikePattern } from '@/lib/utils'
+import { sanitizeIlikePattern, sortElementos } from '@/lib/utils'
 import { PageHeader, EmptyState } from '@/components/layout'
 import { ListChecks } from 'lucide-react'
 
@@ -103,7 +103,10 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
     if (el.concluido) group.concluidos++
   }
 
-  const groups = Array.from(groupMap.values())
+  const groups = Array.from(groupMap.values()).map(g => ({
+    ...g,
+    items: sortElementos(g.items),
+  }))
   const pct = (progresso?.percentagem ?? 0) * 100
   const totalFiltered = elementos?.length ?? 0
 
