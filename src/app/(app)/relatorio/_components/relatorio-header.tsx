@@ -45,7 +45,7 @@ export function RelatorioHeader({
           <ChevronLeft className="h-4 w-4" />
           Voltar
         </Button>
-        <Button size="sm" render={<a href={`/relatorio?ap=${ap.id}&print=1`} target="_blank" />} nativeButton={false}>
+        <Button size="sm" render={<a href={`/relatorio?ap=${ap.id}&print=1`} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
           <Printer className="h-4 w-4" />
           Exportar PDF
         </Button>

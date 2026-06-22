@@ -1,15 +1,15 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, ListChecks, FileText, Printer } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { ChecklistFilters } from '@/components/checklist/checklist-filters'
 import { ChecklistItem } from '@/components/checklist/checklist-item'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { sanitizeIlikePattern, sortElementos } from '@/lib/utils'
 import { PageHeader, EmptyState } from '@/components/layout'
-import { ListChecks } from 'lucide-react'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -126,9 +126,19 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
         title={ap.codigo}
         description={ap.descricao ?? undefined}
         actions={
-          <Badge variant="secondary" className="text-sm">
-            {Math.round(pct)}%
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-sm">
+              {Math.round(pct)}%
+            </Badge>
+            <Button variant="outline" size="sm" render={<a href={`/relatorio?ap=${ap.id}`} target="_blank" rel="noopener noreferrer" />}>
+              <FileText className="h-4 w-4" />
+              Ver Relatório
+            </Button>
+            <Button size="sm" render={<a href={`/relatorio?ap=${ap.id}&print=1`} target="_blank" rel="noopener noreferrer" />}>
+              <Printer className="h-4 w-4" />
+              Exportar PDF
+            </Button>
+          </div>
         }
       />
 
