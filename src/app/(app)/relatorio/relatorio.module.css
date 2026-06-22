@@ -1,0 +1,9 @@
+@media print {
+  :global(aside),
+  :global([data-sidebar]) {
+    display: none !important;
+  }
+  :global(main) {
+    padding: 1rem !important;
+  }
+}

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { sortElementos } from '@/lib/utils'
+import './relatorio.module.css'
 import { PrintTrigger } from './_components/print-trigger'
 import { RelatorioHeader } from './_components/relatorio-header'
 import { RelatorioDivisao } from './_components/relatorio-divisao'
@@ -94,14 +95,6 @@ export default async function RelatorioPage({ searchParams }: Props) {
 
   return (
     <>
-      {/* Hide sidebar and adjust main padding in print */}
-      <style>{`
-        @media print {
-          aside, [data-sidebar] { display: none !important; }
-          main { padding: 1rem !important; }
-        }
-      `}</style>
-
       <PrintTrigger shouldPrint={printParam === '1'} />
 
       <div className="max-w-3xl space-y-5">
