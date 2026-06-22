@@ -68,7 +68,7 @@ export default async function RelatorioPage({ searchParams }: Props) {
       .eq('apartamento_id', apId)
       .order('updated_at', { ascending: false })
       .limit(1)
-      .single(),
+      .maybeSingle(),
   ])
 
   const ap = apResult.data
