@@ -19,7 +19,8 @@ export function FotoGrid({ fotos }: Props) {
             type="button"
             onClick={() => setActiveUrl(f.url_publica)}
             className="w-16 h-16 rounded-lg overflow-hidden border border-border
-              hover:opacity-90 transition-opacity print:pointer-events-none"
+              hover:opacity-90 transition-opacity print:pointer-events-none
+              print:w-40 print:h-40"
           >
             <img
               src={f.url_publica}

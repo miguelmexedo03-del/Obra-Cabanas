@@ -6,4 +6,9 @@
   :global(main) {
     padding: 1rem !important;
   }
+  /* Ensure background colors (amber notes, red/amber badges) print */
+  :global(*) {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }
