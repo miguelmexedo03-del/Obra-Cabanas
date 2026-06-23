@@ -57,7 +57,7 @@ function renderItem(el: ElementoRelatorio, tipo: 'falta' | 'observacao'): string
   const fotos = el.item_evidencias.flatMap(ev => ev.evidencia_fotos)
   const fotosHtml = fotos.length > 0
     ? `<div style="margin:8px 0 0 26px;display:flex;flex-wrap:wrap;gap:6px">${fotos.map(f =>
-        `<img src="${esc(f.url_publica)}" alt="" loading="lazy" style="width:130px;height:130px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb">`
+        `<button onclick="openLightbox('${esc(f.url_publica)}')" style="width:130px;height:130px;border-radius:6px;border:1px solid #e5e7eb;overflow:hidden;padding:0;cursor:zoom-in;background:none"><img src="${esc(f.url_publica)}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block"></button>`
       ).join('')}</div>`
     : ''
 
@@ -154,6 +154,17 @@ function buildHtml(
   <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af;text-align:center">
     Gerado pela app Obra Cabanas em ${esc(geradoEm)}
   </div>
+
+  <!-- Lightbox -->
+  <div id="lb" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out">
+    <img id="lb-img" src="" alt="" style="max-width:90vw;max-height:90vh;border-radius:8px;object-fit:contain;box-shadow:0 25px 60px rgba(0,0,0,.5)">
+  </div>
+  <script>
+    function openLightbox(url){var lb=document.getElementById('lb');lb.style.display='flex';document.getElementById('lb-img').src=url;document.body.style.overflow='hidden';}
+    function closeLightbox(){var lb=document.getElementById('lb');lb.style.display='none';document.getElementById('lb-img').src='';document.body.style.overflow='';}
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
+    document.getElementById('lb').addEventListener('click',function(e){if(e.target===this)closeLightbox();});
+  </script>
 </body>
 </html>`
 }
