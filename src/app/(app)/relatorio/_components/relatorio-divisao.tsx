@@ -135,15 +135,6 @@ function ItemRow({
         </span>
       </div>
 
-      {/* Direct nota from elementos.notas */}
-      {el.notas && (
-        <div className="ml-7 mt-1.5 text-sm text-muted-foreground
-          bg-amber-50 border-l-2 border-amber-300 pl-2.5 py-1 rounded-r
-          print:bg-yellow-50">
-          {el.notas}
-        </div>
-      )}
-
       {/* Notas from item_evidencias.texto */}
       {evidenciaNotas.map((nota, i) => (
         <div key={i} className="ml-7 mt-1.5 text-sm text-muted-foreground

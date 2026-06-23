@@ -20,9 +20,8 @@ function buildDivisoes(elementos: ElementoRelatorio[]): DivisaoRelatorio[] {
   for (const el of sortElementos(elementos)) {
     if (!el.divisao_id || !el.divisoes) continue
 
-    const hasNota = el.notas !== null
     const hasEvidencias = el.item_evidencias.length > 0
-    if (el.concluido && !hasNota && !hasEvidencias) continue
+    if (el.concluido && !hasEvidencias) continue
 
     if (!map.has(el.divisao_id)) {
       map.set(el.divisao_id, {

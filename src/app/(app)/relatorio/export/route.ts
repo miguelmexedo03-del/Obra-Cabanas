@@ -15,9 +15,8 @@ function buildDivisoes(elementos: ElementoRelatorio[]): DivisaoRelatorio[] {
   const map = new Map<number, DivisaoRelatorio>()
   for (const el of sortElementos(elementos)) {
     if (!el.divisao_id || !el.divisoes) continue
-    const hasNota = el.notas !== null
     const hasEvidencias = el.item_evidencias.length > 0
-    if (el.concluido && !hasNota && !hasEvidencias) continue
+    if (el.concluido && !hasEvidencias) continue
     if (!map.has(el.divisao_id)) {
       map.set(el.divisao_id, {
         id: el.divisao_id,
@@ -46,7 +45,6 @@ function renderItem(el: ElementoRelatorio, tipo: 'falta' | 'observacao'): string
     : `<span style="display:inline-flex;width:18px;height:18px;border-radius:4px;background:#16a34a;flex-shrink:0;align-items:center;justify-content:center;margin-top:1px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span>`
 
   const notas: string[] = []
-  if (el.notas) notas.push(esc(el.notas))
   for (const ev of el.item_evidencias) {
     if (ev.texto) notas.push(esc(ev.texto))
   }
