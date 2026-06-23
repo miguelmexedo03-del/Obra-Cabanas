@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import JSZip from 'jszip'
 import { createClient } from '@/lib/supabase/server'
 import { sortElementos } from '@/lib/utils'
 import type { ElementoRelatorio, DivisaoRelatorio } from '../_components/relatorio-divisao'
@@ -227,66 +228,31 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  // Multiple APs — combined HTML with TOC + sections
-  const sectionsHtml = apsData.map(({ ap, elementos, ultimaAlteracao }, i) => {
+  // Multiple APs — ZIP with one HTML file per apartment
+  const zip = new JSZip()
+  const folder = zip.folder('relatorios-obra-cabanas')!
+
+  for (const { ap, elementos, ultimaAlteracao } of apsData) {
     const divisoes = buildDivisoes(elementos)
     const totalEmFalta = divisoes.reduce((s, d) => s + d.emFalta.length, 0)
     const totalObservacao = divisoes.reduce((s, d) => s + d.comObservacao.length, 0)
-    const metaLine = ultimaAlteracao
-      ? `Gerado em <strong>${esc(geradoEm)}</strong> · Última alteração: <strong>${esc(ultimaAlteracao)}</strong>`
-      : `Gerado em <strong>${esc(geradoEm)}</strong>`
-    const body = divisoes.length > 0
-      ? divisoes.map(renderDivisao).join('')
-      : `<p style="text-align:center;color:#9ca3af;padding:2rem 0">Nenhuma ocorrência registada.</p>`
-    const sep = i > 0 ? 'style="page-break-before:always;margin-top:3rem;padding-top:3rem;border-top:2px solid #e5e7eb"' : ''
-    return `<section id="ap-${ap.id}" ${sep}>
-      <div style="padding-bottom:16px;border-bottom:1px solid #e5e7eb;margin-bottom:20px">
-        <h2 style="font-size:20px;font-weight:700;letter-spacing:-.025em">${esc(ap.codigo)} — Cabanas</h2>
-        <p style="color:#6b7280;font-size:13px;margin-top:4px">${metaLine}</p>
-        <div style="display:flex;gap:28px;margin-top:10px">
-          <div><div style="font-size:24px;font-weight:700;color:#ef4444;line-height:1">${totalEmFalta}</div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:500;color:#6b7280;margin-top:2px">Em falta</div></div>
-          <div><div style="font-size:24px;font-weight:700;color:#d97706;line-height:1">${totalObservacao}</div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:500;color:#6b7280;margin-top:2px">Feitos com observação</div></div>
-        </div>
-      </div>
-      ${body}
-    </section>`
-  }).join('')
+    const html = buildHtml(ap.codigo, geradoEm, ultimaAlteracao, totalEmFalta, totalObservacao, divisoes)
+    folder.file(`relatorio-${ap.codigo}.html`, html)
+  }
 
-  const toc = apsData.map(({ ap }) =>
-    `<a href="#ap-${ap.id}" style="color:#2563eb;text-decoration:none;font-size:13px;font-weight:500;padding:4px 10px;border:1px solid #dbeafe;border-radius:6px;background:#eff6ff">${esc(ap.codigo)}</a>`
-  ).join(' ')
+  const zipBytes = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' })
 
-  const combinedHtml = `<!DOCTYPE html>
-<html lang="pt">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Relatórios — Obra Cabanas (${apsData.length} apartamentos)</title>
-  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.5;color:#111827;background:#fff;padding:2rem;max-width:860px;margin:0 auto}@media print{body{padding:1rem}}</style>
-</head>
-<body>
-  <div style="padding-bottom:16px;border-bottom:2px solid #e5e7eb;margin-bottom:28px">
-    <h1 style="font-size:18px;font-weight:700">Relatórios de Obra — Cabanas</h1>
-    <p style="color:#6b7280;font-size:13px;margin-top:4px">${apsData.length} apartamentos · Gerado em <strong>${esc(geradoEm)}</strong></p>
-    <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">${toc}</div>
-  </div>
-  ${sectionsHtml}
-  <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af;text-align:center">Gerado pela app Obra Cabanas em ${esc(geradoEm)}</div>
-  <div id="lb" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out"><img id="lb-img" src="" alt="" style="max-width:90vw;max-height:90vh;border-radius:8px;object-fit:contain;box-shadow:0 25px 60px rgba(0,0,0,.5)"></div>
-  <script>
-    function openLightbox(url){var lb=document.getElementById('lb');lb.style.display='flex';document.getElementById('lb-img').src=url;document.body.style.overflow='hidden';}
-    function closeLightbox(){var lb=document.getElementById('lb');lb.style.display='none';document.getElementById('lb-img').src='';document.body.style.overflow='';}
-    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
-    document.getElementById('lb').addEventListener('click',function(e){if(e.target===this)closeLightbox();});
-  </script>
-</body>
-</html>`
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(zipBytes)
+      controller.close()
+    },
+  })
 
-  const codigos = apsData.map(d => d.ap.codigo).join('-')
-  return new NextResponse(combinedHtml, {
+  return new NextResponse(stream, {
     headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Content-Disposition': `attachment; filename="relatorio-${codigos}.html"`,
+      'Content-Type': 'application/zip',
+      'Content-Disposition': 'attachment; filename="relatorios-obra-cabanas.zip"',
     },
   })
 }

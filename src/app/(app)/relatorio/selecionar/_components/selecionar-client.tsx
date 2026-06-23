@@ -38,8 +38,11 @@ export function SelecionarClient({ apartamentos }: Props) {
 
   const exportPdf = () => {
     if (!selected.size) return
-    const query = sortedIds().map(id => `aps=${id}`).join('&')
-    window.open(`/relatorio/multi?${query}&print=1`, '_blank', 'noopener,noreferrer')
+    sortedIds().forEach((id, i) => {
+      setTimeout(() => {
+        window.open(`/relatorio?ap=${id}&print=1`, '_blank', 'noopener,noreferrer')
+      }, i * 400)
+    })
   }
 
   const n = selected.size
@@ -86,15 +89,23 @@ export function SelecionarClient({ apartamentos }: Props) {
         </div>
       </div>
 
-      <div className="flex gap-3">
-        <Button variant="outline" disabled={n === 0} onClick={exportHtml}>
-          <FileDown className="h-4 w-4" />
-          Exportar HTML{n > 0 ? ` (${n})` : ''}
-        </Button>
-        <Button disabled={n === 0} onClick={exportPdf}>
-          <Printer className="h-4 w-4" />
-          Exportar PDF{n > 0 ? ` (${n})` : ''}
-        </Button>
+      <div className="space-y-3">
+        <div className="flex gap-3">
+          <Button variant="outline" disabled={n === 0} onClick={exportHtml}>
+            <FileDown className="h-4 w-4" />
+            Exportar HTML{n > 0 ? ` (${n})` : ''}
+          </Button>
+          <Button disabled={n === 0} onClick={exportPdf}>
+            <Printer className="h-4 w-4" />
+            Exportar PDF{n > 0 ? ` (${n})` : ''}
+          </Button>
+        </div>
+        {n > 1 && (
+          <p className="text-xs text-muted-foreground">
+            HTML exporta um .zip com {n} ficheiros individuais.
+            PDF abre {n} abas — se o browser bloquear, clica em &quot;Permitir popups&quot; na barra de endereço.
+          </p>
+        )}
       </div>
     </div>
   )
