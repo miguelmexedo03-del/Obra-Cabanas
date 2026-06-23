@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { PageHeader } from '@/components/layout'
+import { Button } from '@/components/ui/button'
+import { FileDown } from 'lucide-react'
 
 type ProgressoRow = {
   apartamento_id: number
@@ -25,7 +27,16 @@ export default async function ApartamentosPage() {
 
   return (
     <div>
-      <PageHeader title="Apartamentos" description="24 unidades em reabilitação" />
+      <PageHeader
+        title="Apartamentos"
+        description="24 unidades em reabilitação"
+        actions={
+          <Button variant="outline" size="sm" render={<Link href="/relatorio/selecionar" />} nativeButton={false}>
+            <FileDown className="h-4 w-4" />
+            Exportar relatórios
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {apartamentos?.map(ap => {

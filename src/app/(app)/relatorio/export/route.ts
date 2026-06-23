@@ -167,54 +167,126 @@ function buildHtml(
 </html>`
 }
 
+const ELEMENTOS_QUERY = `
+  id, elemento, sub_elemento, concluido, notas, fase_id, divisao_id,
+  fases(nome, cor_hex),
+  divisoes(id, nome, ordem),
+  item_evidencias(
+    id, texto, criado_em,
+    evidencia_fotos(id, url_publica)
+  )
+` as const
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return new NextResponse('Não autorizado', { status: 401 })
 
-  const apId = Number(request.nextUrl.searchParams.get('ap'))
-  if (!apId || isNaN(apId)) return new NextResponse('Parâmetro ap inválido', { status: 400 })
+  const apIds = request.nextUrl.searchParams.getAll('ap')
+    .map(Number).filter(n => !isNaN(n) && n > 0)
+  if (apIds.length === 0) return new NextResponse('Parâmetro ap inválido', { status: 400 })
 
-  const [apResult, elementosResult, lastModResult] = await Promise.all([
-    supabase.from('apartamentos').select('id, codigo').eq('id', apId).single(),
-    supabase.from('elementos').select(`
-      id, elemento, sub_elemento, concluido, notas, fase_id, divisao_id,
-      fases(nome, cor_hex),
-      divisoes(id, nome, ordem),
-      item_evidencias(
-        id, texto, criado_em,
-        evidencia_fotos(id, url_publica)
-      )
-    `).eq('apartamento_id', apId).not('divisao_id', 'is', null),
-    supabase.from('elementos')
-      .select('updated_at')
-      .eq('apartamento_id', apId)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ])
-
-  if (!apResult.data) return new NextResponse('Apartamento não encontrado', { status: 404 })
-
-  const { codigo } = apResult.data
-  const elementos = (elementosResult.data ?? []) as ElementoRelatorio[]
-  const divisoes = buildDivisoes(elementos)
-
-  const totalEmFalta = divisoes.reduce((s, d) => s + d.emFalta.length, 0)
-  const totalObservacao = divisoes.reduce((s, d) => s + d.comObservacao.length, 0)
-
+  const geradoEm = new Date().toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })
   const fmt = (iso: string | null) =>
     iso ? new Date(iso).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' }) : null
 
-  const geradoEm = new Date().toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })
-  const ultimaAlteracao = fmt(lastModResult.data?.updated_at ?? null)
+  const apsData = (await Promise.all(
+    apIds.map(async apId => {
+      const [apResult, elementosResult, lastModResult] = await Promise.all([
+        supabase.from('apartamentos').select('id, codigo').eq('id', apId).single(),
+        supabase.from('elementos').select(ELEMENTOS_QUERY)
+          .eq('apartamento_id', apId).not('divisao_id', 'is', null),
+        supabase.from('elementos').select('updated_at')
+          .eq('apartamento_id', apId)
+          .order('updated_at', { ascending: false })
+          .limit(1).maybeSingle(),
+      ])
+      if (!apResult.data) return null
+      return {
+        ap: apResult.data,
+        elementos: (elementosResult.data ?? []) as ElementoRelatorio[],
+        ultimaAlteracao: fmt(lastModResult.data?.updated_at ?? null),
+      }
+    })
+  )).filter((d): d is NonNullable<typeof d> => d !== null)
 
-  const html = buildHtml(codigo, geradoEm, ultimaAlteracao, totalEmFalta, totalObservacao, divisoes)
+  if (apsData.length === 0) return new NextResponse('Nenhum apartamento encontrado', { status: 404 })
 
-  return new NextResponse(html, {
+  // Single AP — use full standalone HTML
+  if (apsData.length === 1) {
+    const { ap, elementos, ultimaAlteracao } = apsData[0]
+    const divisoes = buildDivisoes(elementos)
+    const totalEmFalta = divisoes.reduce((s, d) => s + d.emFalta.length, 0)
+    const totalObservacao = divisoes.reduce((s, d) => s + d.comObservacao.length, 0)
+    const html = buildHtml(ap.codigo, geradoEm, ultimaAlteracao, totalEmFalta, totalObservacao, divisoes)
+    return new NextResponse(html, {
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Disposition': `attachment; filename="relatorio-${ap.codigo}.html"`,
+      },
+    })
+  }
+
+  // Multiple APs — combined HTML with TOC + sections
+  const sectionsHtml = apsData.map(({ ap, elementos, ultimaAlteracao }, i) => {
+    const divisoes = buildDivisoes(elementos)
+    const totalEmFalta = divisoes.reduce((s, d) => s + d.emFalta.length, 0)
+    const totalObservacao = divisoes.reduce((s, d) => s + d.comObservacao.length, 0)
+    const metaLine = ultimaAlteracao
+      ? `Gerado em <strong>${esc(geradoEm)}</strong> · Última alteração: <strong>${esc(ultimaAlteracao)}</strong>`
+      : `Gerado em <strong>${esc(geradoEm)}</strong>`
+    const body = divisoes.length > 0
+      ? divisoes.map(renderDivisao).join('')
+      : `<p style="text-align:center;color:#9ca3af;padding:2rem 0">Nenhuma ocorrência registada.</p>`
+    const sep = i > 0 ? 'style="page-break-before:always;margin-top:3rem;padding-top:3rem;border-top:2px solid #e5e7eb"' : ''
+    return `<section id="ap-${ap.id}" ${sep}>
+      <div style="padding-bottom:16px;border-bottom:1px solid #e5e7eb;margin-bottom:20px">
+        <h2 style="font-size:20px;font-weight:700;letter-spacing:-.025em">${esc(ap.codigo)} — Cabanas</h2>
+        <p style="color:#6b7280;font-size:13px;margin-top:4px">${metaLine}</p>
+        <div style="display:flex;gap:28px;margin-top:10px">
+          <div><div style="font-size:24px;font-weight:700;color:#ef4444;line-height:1">${totalEmFalta}</div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:500;color:#6b7280;margin-top:2px">Em falta</div></div>
+          <div><div style="font-size:24px;font-weight:700;color:#d97706;line-height:1">${totalObservacao}</div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:500;color:#6b7280;margin-top:2px">Feitos com observação</div></div>
+        </div>
+      </div>
+      ${body}
+    </section>`
+  }).join('')
+
+  const toc = apsData.map(({ ap }) =>
+    `<a href="#ap-${ap.id}" style="color:#2563eb;text-decoration:none;font-size:13px;font-weight:500;padding:4px 10px;border:1px solid #dbeafe;border-radius:6px;background:#eff6ff">${esc(ap.codigo)}</a>`
+  ).join(' ')
+
+  const combinedHtml = `<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Relatórios — Obra Cabanas (${apsData.length} apartamentos)</title>
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.5;color:#111827;background:#fff;padding:2rem;max-width:860px;margin:0 auto}@media print{body{padding:1rem}}</style>
+</head>
+<body>
+  <div style="padding-bottom:16px;border-bottom:2px solid #e5e7eb;margin-bottom:28px">
+    <h1 style="font-size:18px;font-weight:700">Relatórios de Obra — Cabanas</h1>
+    <p style="color:#6b7280;font-size:13px;margin-top:4px">${apsData.length} apartamentos · Gerado em <strong>${esc(geradoEm)}</strong></p>
+    <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px">${toc}</div>
+  </div>
+  ${sectionsHtml}
+  <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af;text-align:center">Gerado pela app Obra Cabanas em ${esc(geradoEm)}</div>
+  <div id="lb" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out"><img id="lb-img" src="" alt="" style="max-width:90vw;max-height:90vh;border-radius:8px;object-fit:contain;box-shadow:0 25px 60px rgba(0,0,0,.5)"></div>
+  <script>
+    function openLightbox(url){var lb=document.getElementById('lb');lb.style.display='flex';document.getElementById('lb-img').src=url;document.body.style.overflow='hidden';}
+    function closeLightbox(){var lb=document.getElementById('lb');lb.style.display='none';document.getElementById('lb-img').src='';document.body.style.overflow='';}
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox();});
+    document.getElementById('lb').addEventListener('click',function(e){if(e.target===this)closeLightbox();});
+  </script>
+</body>
+</html>`
+
+  const codigos = apsData.map(d => d.ap.codigo).join('-')
+  return new NextResponse(combinedHtml, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Content-Disposition': `attachment; filename="relatorio-${codigo}.html"`,
+      'Content-Disposition': `attachment; filename="relatorio-${codigos}.html"`,
     },
   })
 }
