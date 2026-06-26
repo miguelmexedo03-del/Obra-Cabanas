@@ -51,9 +51,14 @@ export async function criarElementosBatch(
   if (!user) return { success: false, error: 'Não autenticado.' }
   if (itens.length === 0) return { success: false, error: 'Nenhum item a criar.' }
 
+  const trimmedItens = itens.map(it => ({ ...it, elemento: it.elemento.trim() }))
+  if (trimmedItens.some(it => !it.elemento)) {
+    return { success: false, error: 'Todos os itens devem ter um nome.' }
+  }
+
   const { data, error } = await supabase
     .from('elementos')
-    .insert(itens.map(it => ({ ...it, concluido: false })))
+    .insert(trimmedItens.map(it => ({ ...it, concluido: false })))
     .select('id')
 
   if (error) return { success: false, error: error.message }

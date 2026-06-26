@@ -31,12 +31,11 @@ type RawElemento = {
 type DivisaoGroup = {
   id: number | null
   nome: string
-  faseColor: string
   concluidos: number
   items: RawElemento[]
 }
 
-function getDefaultFaseId(items: RawElemento[]): number {
+function getDefaultFaseId(items: { fase_id: number }[]): number {
   if (items.length === 0) return 1
   const counts = new Map<number, number>()
   for (const item of items) {
@@ -100,6 +99,12 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
 
   const { data: elementos } = await query as { data: RawElemento[] | null; error: unknown }
 
+  // Unfiltered query — used only to compute defaultFaseId per divisão (Fix #1: avoid fase filter bias)
+  const { data: allElementos } = await supabase
+    .from('elementos')
+    .select('id, divisao_id, fase_id')
+    .eq('apartamento_id', apId)
+
   // Group by divisão, preserving order
   const groupMap = new Map<string, DivisaoGroup>()
   for (const el of elementos ?? []) {
@@ -108,7 +113,6 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
       groupMap.set(key, {
         id: el.divisao_id,
         nome: el.divisoes?.nome ?? '—',
-        faseColor: el.fases?.cor_hex ?? '#888888',
         concluidos: 0,
         items: [],
       })
@@ -120,11 +124,16 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
 
   const groups: ChecklistGroupData[] = Array.from(groupMap.values()).map(g => {
     const sorted = sortElementos(g.items)
+    // Fix #1: compute defaultFaseId from unfiltered elements so a fase filter doesn't bias the result
+    const unfiltered = (allElementos ?? []).filter(el => el.divisao_id === g.id)
+    const defaultFaseId = getDefaultFaseId(unfiltered.length > 0 ? unfiltered : sorted)
+    // Fix #2: derive faseColor from the majority fase, not from the first item in DB order
+    const faseColor = fases?.find(f => f.id === defaultFaseId)?.cor_hex ?? '#94a3b8'
     return {
       id: g.id,
       nome: g.nome,
-      faseColor: g.faseColor,
-      defaultFaseId: getDefaultFaseId(sorted),
+      faseColor,
+      defaultFaseId,
       concluidos: g.concluidos,
       items: sorted,
     }
