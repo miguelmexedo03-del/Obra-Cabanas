@@ -4,7 +4,8 @@ import { Suspense } from 'react'
 import { ChevronLeft, ListChecks, FileText, Printer } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { ChecklistFilters } from '@/components/checklist/checklist-filters'
-import { ChecklistItem } from '@/components/checklist/checklist-item'
+import { ChecklistGroups } from '@/components/checklist/checklist-groups'
+import type { ChecklistGroupData } from '@/components/checklist/checklist-groups'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
@@ -33,6 +34,20 @@ type DivisaoGroup = {
   faseColor: string
   concluidos: number
   items: RawElemento[]
+}
+
+function getDefaultFaseId(items: RawElemento[]): number {
+  if (items.length === 0) return 1
+  const counts = new Map<number, number>()
+  for (const item of items) {
+    counts.set(item.fase_id, (counts.get(item.fase_id) ?? 0) + 1)
+  }
+  let bestId = items[0].fase_id
+  let bestCount = 0
+  for (const [faseId, count] of counts) {
+    if (count > bestCount) { bestCount = count; bestId = faseId }
+  }
+  return bestId
 }
 
 export default async function ApartamentoPage({ params, searchParams }: Props) {
@@ -103,10 +118,17 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
     if (el.concluido) group.concluidos++
   }
 
-  const groups = Array.from(groupMap.values()).map(g => ({
-    ...g,
-    items: sortElementos(g.items),
-  }))
+  const groups: ChecklistGroupData[] = Array.from(groupMap.values()).map(g => {
+    const sorted = sortElementos(g.items)
+    return {
+      id: g.id,
+      nome: g.nome,
+      faseColor: g.faseColor,
+      defaultFaseId: getDefaultFaseId(sorted),
+      concluidos: g.concluidos,
+      items: sorted,
+    }
+  })
   const pct = (progresso?.percentagem ?? 0) * 100
   const totalFiltered = elementos?.length ?? 0
 
@@ -163,34 +185,7 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
       {groups.length === 0 ? (
         <EmptyState icon={ListChecks} title="Nenhum item encontrado" description="Ajusta os filtros para ver resultados." />
       ) : (
-        <div className="space-y-3">
-          <p className="text-xs text-muted-foreground">{totalFiltered} itens</p>
-          {groups.map((group, i) => (
-            <div key={i} className="rounded-lg border overflow-hidden">
-              <div
-                className="px-4 py-2.5 flex items-center gap-2 border-b bg-muted/30"
-                style={{ borderLeftColor: group.faseColor, borderLeftWidth: '3px' }}
-              >
-                <span className="text-sm font-medium flex-1 truncate">{group.nome}</span>
-                <span className="text-xs text-muted-foreground shrink-0">
-                  {group.concluidos}/{group.items.length}
-                </span>
-              </div>
-              <div className="divide-y">
-                {group.items.map(el => (
-                  <ChecklistItem
-                    key={el.id}
-                    id={el.id}
-                    elemento={el.elemento}
-                    sub_elemento={el.sub_elemento}
-                    concluido={el.concluido}
-                    faseColor={group.faseColor}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        <ChecklistGroups initialGroups={groups} apartamentoId={apId} />
       )}
     </div>
   )
