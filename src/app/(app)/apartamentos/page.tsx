@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { PageHeader } from '@/components/layout'
 import { Button } from '@/components/ui/button'
-import { FileDown } from 'lucide-react'
+import { FileDown, PlusSquare } from 'lucide-react'
 
 type ProgressoRow = {
   apartamento_id: number
@@ -31,10 +31,16 @@ export default async function ApartamentosPage() {
         title="Apartamentos"
         description="24 unidades em reabilitação"
         actions={
-          <Button variant="outline" size="sm" render={<Link href="/relatorio/selecionar" />} nativeButton={false}>
-            <FileDown className="h-4 w-4" />
-            Exportar relatórios
-          </Button>
+          <>
+            <Button variant="outline" size="sm" render={<Link href="/gerir-itens" />} nativeButton={false}>
+              <PlusSquare className="h-4 w-4" />
+              Gerir Itens
+            </Button>
+            <Button variant="outline" size="sm" render={<Link href="/relatorio/selecionar" />} nativeButton={false}>
+              <FileDown className="h-4 w-4" />
+              Exportar relatórios
+            </Button>
+          </>
         }
       />
 
