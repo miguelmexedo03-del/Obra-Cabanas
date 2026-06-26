@@ -24,6 +24,7 @@ export function GerirItensClient({ fases, grupos }: Props) {
   const [faseId, setFaseId] = useState<number>(fases[0]?.id ?? 1)
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set())
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const [step3Snapshot, setStep3Snapshot] = useState<DivisaoItem[]>([])
   const [isPending, startTransition] = useTransition()
   const [done, setDone] = useState<{ nome: string; count: number } | null>(null)
 
@@ -51,9 +52,22 @@ export function GerirItensClient({ fases, grupos }: Props) {
 
   function toggleDivisao(id: number) {
     setSelectedIds(prev => {
-      const n = new Set(prev)
-      n.has(id) ? n.delete(id) : n.add(id)
-      return n
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id); else next.add(id)
+      // Update selectedKeys to reflect partial/full group state
+      const group = grupos.find(g => g.divisoes.some(d => d.id === id))
+      if (group) {
+        const allSelected = group.divisoes.every(d => next.has(d.id))
+        const noneSelected = group.divisoes.every(d => !next.has(d.id))
+        setSelectedKeys(prev2 => {
+          const next2 = new Set(prev2)
+          if (allSelected) next2.add(group.key)
+          else if (noneSelected) next2.delete(group.key)
+          // partially selected: keep key present (group checkbox shows checked to return)
+          return next2
+        })
+      }
+      return next
     })
   }
 
@@ -67,9 +81,13 @@ export function GerirItensClient({ fases, grupos }: Props) {
     setSelectedIds(new Set())
   }
 
+  function goToStep3() {
+    setStep3Snapshot(grupos.flatMap(g => g.divisoes).filter(d => selectedIds.has(d.id)))
+    setStep(3)
+  }
+
   function handleConfirm() {
-    const allDivisoes = grupos.flatMap(g => g.divisoes)
-    const selected = allDivisoes.filter(d => selectedIds.has(d.id))
+    const selected = step3Snapshot.filter(d => selectedIds.has(d.id))
     const itens = selected.map(d => ({
       apartamento_id: d.apartamentoId,
       divisao_id: d.id,
@@ -94,10 +112,10 @@ export function GerirItensClient({ fases, grupos }: Props) {
     setFaseId(fases[0]?.id ?? 1)
     setSelectedKeys(new Set())
     setSelectedIds(new Set())
+    setStep3Snapshot([])
   }
 
   const selectedFaseName = fases.find(f => f.id === faseId)?.nome ?? ''
-  const divisoesParaRefinar = grupos.flatMap(g => g.divisoes).filter(d => selectedIds.has(d.id))
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -109,7 +127,7 @@ export function GerirItensClient({ fases, grupos }: Props) {
             Adiciona o mesmo item a várias divisões de uma vez
           </p>
         </div>
-        <Button variant="outline" size="sm" render={<Link href="/apartamentos" />} nativeButton={false}>
+        <Button variant="outline" size="sm" render={<Link href="/apartamentos" />}>
           <ChevronLeft className="h-4 w-4" />
           Voltar
         </Button>
@@ -234,7 +252,7 @@ export function GerirItensClient({ fases, grupos }: Props) {
                       />
                       <span className="text-sm flex-1">{g.displayName}</span>
                       <span className="text-xs text-muted-foreground shrink-0">
-                        {g.divisoes.length} divisão{g.divisoes.length !== 1 ? 'ões' : ''} em {apCount} AP{apCount !== 1 ? 's' : ''}
+                        {g.divisoes.length} {g.divisoes.length !== 1 ? 'divisões' : 'divisão'} em {apCount} AP{apCount !== 1 ? 's' : ''}
                       </span>
                     </label>
                   )
@@ -242,11 +260,11 @@ export function GerirItensClient({ fases, grupos }: Props) {
               </div>
               {step === 2 && (
                 <Button
-                  onClick={() => setStep(3)}
+                  onClick={goToStep3}
                   disabled={selectedIds.size === 0}
                   size="sm"
                 >
-                  Seguinte ({selectedIds.size} divisões)
+                  Seguinte ({selectedIds.size} {selectedIds.size !== 1 ? 'divisões' : 'divisão'})
                 </Button>
               )}
               {step > 2 && (
@@ -277,7 +295,7 @@ export function GerirItensClient({ fases, grupos }: Props) {
                 Desmarca as divisões onde <strong>não</strong> queres adicionar o item.
               </p>
               <div className="space-y-1 max-h-64 overflow-y-auto">
-                {divisoesParaRefinar.map(d => (
+                {step3Snapshot.map(d => (
                   <label
                     key={d.id}
                     className="flex items-center gap-3 px-2 py-1.5 rounded-md hover:bg-muted/50 cursor-pointer"
@@ -299,7 +317,7 @@ export function GerirItensClient({ fases, grupos }: Props) {
               >
                 {isPending
                   ? 'A criar...'
-                  : `Adicionar "${nome.trim()}" a ${selectedIds.size} divisão${selectedIds.size !== 1 ? 'ões' : ''}`
+                  : `Adicionar "${nome.trim()}" a ${selectedIds.size} ${selectedIds.size !== 1 ? 'divisões' : 'divisão'}`
                 }
               </Button>
             </div>

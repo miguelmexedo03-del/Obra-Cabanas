@@ -17,7 +17,6 @@ function normalizarNome(nome: string): string {
     .trim()
     .replace(/\s+\d+$/, '')
     .replace(/\s+/g, ' ')
-    .trim()
 }
 
 export default async function GerirItensPage() {
