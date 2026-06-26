@@ -130,7 +130,6 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
     }
   })
   const pct = (progresso?.percentagem ?? 0) * 100
-  const totalFiltered = elementos?.length ?? 0
 
   return (
     <div>
