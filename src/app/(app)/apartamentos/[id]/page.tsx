@@ -9,7 +9,7 @@ import type { ChecklistGroupData } from '@/components/checklist/checklist-groups
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { sanitizeIlikePattern, sortElementos } from '@/lib/utils'
+import { sanitizeIlikePattern, sortElementos, divisaoSortPriority } from '@/lib/utils'
 import { PageHeader, EmptyState } from '@/components/layout'
 
 interface Props {
@@ -137,7 +137,7 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
       concluidos: g.concluidos,
       items: sorted,
     }
-  })
+  }).sort((a, b) => divisaoSortPriority(a.nome) - divisaoSortPriority(b.nome))
   const pct = (progresso?.percentagem ?? 0) * 100
 
   return (

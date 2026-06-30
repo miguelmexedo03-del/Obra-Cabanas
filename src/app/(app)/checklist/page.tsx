@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ChecklistFilters } from '@/components/checklist/checklist-filters'
 import { ChecklistItem } from '@/components/checklist/checklist-item'
 import { RealtimeRefresh } from '@/components/shared/realtime-refresh'
-import { sanitizeIlikePattern, sortElementos } from '@/lib/utils'
+import { sanitizeIlikePattern, sortElementos, divisaoSortPriority } from '@/lib/utils'
 import { PageHeader, EmptyState } from '@/components/layout'
 
 interface Props {
@@ -31,6 +31,7 @@ type RawElemento = {
 }
 
 type Group = {
+  apId: number
   apCodigo: string
   divisaoNome: string
   faseColor: string
@@ -95,7 +96,7 @@ async function ChecklistContent({ searchParams }: Props) {
     const key = `${el.apartamento_id}__${el.divisao_id ?? 'null'}`
 
     if (!groupMap.has(key)) {
-      groupMap.set(key, { apCodigo, divisaoNome, faseColor, concluidos: 0, items: [] })
+      groupMap.set(key, { apId: el.apartamento_id, apCodigo, divisaoNome, faseColor, concluidos: 0, items: [] })
     }
     const group = groupMap.get(key)!
     group.items.push(el)
@@ -105,7 +106,10 @@ async function ChecklistContent({ searchParams }: Props) {
   const groups = Array.from(groupMap.values()).map(g => ({
     ...g,
     items: sortElementos(g.items),
-  }))
+  })).sort((a, b) => {
+    if (a.apId !== b.apId) return a.apId - b.apId
+    return divisaoSortPriority(a.divisaoNome) - divisaoSortPriority(b.divisaoNome)
+  })
 
   return (
     <div className="space-y-3">

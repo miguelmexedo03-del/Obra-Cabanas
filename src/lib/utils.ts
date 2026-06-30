@@ -18,6 +18,42 @@ const SUB_ELEMENTO_ORDER: Record<string, number> = {
   Primário: 10, Extracoat: 20, '1ª demão': 30, '2ª demão': 40,
 }
 
+// Semantic sort order for apartment divisions (Sala → Cozinha → Suites → Quartos → WC Serviço → Varanda)
+export function divisaoSortPriority(nome: string): number {
+  const n = nome.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim()
+
+  if (n === 'sala') return 100
+  if (n === 'cozinha') return 200
+
+  if (n === 'suite principal') return 300
+  if (n.includes('wc') && n.includes('suite principal')) return 310
+  if (n.includes('closet') && n.includes('suite principal')) return 320
+
+  if (n.includes('suite 1') && !n.includes('wc')) return 400
+  if (n.includes('wc') && n.includes('suite 1')) return 410
+
+  if (n.includes('suite 2') && !n.includes('wc')) return 500
+  if (n.includes('wc') && n.includes('suite 2')) return 510
+
+  if (n.startsWith('suite') && !n.includes('wc')) return 600
+  if (n.includes('wc') && n.includes('suite')) return 610
+  if (n.includes('closet') && n.includes('suite')) return 620
+
+  if (n.startsWith('quarto') && !n.includes('wc')) return 700
+  if (n.includes('wc') && n.includes('quarto')) return 710
+
+  if (n.includes('wc') && n.includes('servic')) return 800
+
+  if (n.startsWith('closet')) return 840
+  if (n === 'wc') return 860
+
+  if (n.startsWith('varanda')) return 900
+
+  if (n.startsWith('entrada')) return 50
+
+  return 9999
+}
+
 export function sortElementos<T extends {
   elemento: string
   fase_id: number
