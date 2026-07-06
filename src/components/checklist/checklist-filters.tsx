@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
+import { TIPOS_DIVISAO } from '@/lib/utils'
 
 const ALL = '__all__'
 
@@ -25,9 +26,10 @@ interface Props {
   fases: FilterOption[]
   divisoes?: FilterOption[]
   showApFilter?: boolean
+  showTipoFilter?: boolean
 }
 
-export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter = true }: Props) {
+export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter = true, showTipoFilter = false }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -117,6 +119,25 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
           ))}
         </SelectContent>
       </Select>
+
+      {showTipoFilter && (
+        <Select
+          value={searchParams.get('tipo') ?? undefined}
+          onValueChange={(v: string | null) => setParam('tipo', v === null || v === ALL ? null : v)}
+        >
+          <SelectTrigger className="w-[160px]">
+            <SelectValue>
+              {searchParams.get('tipo') ?? <span className="text-muted-foreground">Tipo de Divisão</span>}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Todos os tipos</SelectItem>
+            {TIPOS_DIVISAO.map(t => (
+              <SelectItem key={t} value={t}>{t}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       {divisoes && divisoes.length > 0 && (
         <Select
