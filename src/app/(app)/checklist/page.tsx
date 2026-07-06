@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ChecklistFilters } from '@/components/checklist/checklist-filters'
 import { ChecklistItem } from '@/components/checklist/checklist-item'
 import { RealtimeRefresh } from '@/components/shared/realtime-refresh'
-import { sanitizeIlikePattern, sortElementos, divisaoSortPriority } from '@/lib/utils'
+import { sanitizeIlikePattern, sortElementos, divisaoSortPriority, tipoDivisao } from '@/lib/utils'
 import { PageHeader, EmptyState } from '@/components/layout'
 
 interface Props {
@@ -14,6 +14,7 @@ interface Props {
     divisao?: string
     status?: string
     q?: string
+    tipo?: string
   }>
 }
 
@@ -67,13 +68,17 @@ async function ChecklistContent({ searchParams }: Props) {
     if (q) query = query.or(`elemento.ilike.%${q}%,sub_elemento.ilike.%${q}%`)
   }
 
-  const { data: elementos, error } = await query as { data: RawElemento[] | null; error: unknown }
+  const { data: elementosRaw, error } = await query as { data: RawElemento[] | null; error: unknown }
 
   if (error) {
     return <p className="text-sm text-destructive py-8">Erro ao carregar dados.</p>
   }
 
-  if (!elementos?.length) {
+  const elementos = params.tipo
+    ? (elementosRaw ?? []).filter(el => el.divisoes && tipoDivisao(el.divisoes.nome) === params.tipo)
+    : (elementosRaw ?? [])
+
+  if (!elementos.length) {
     return (
       <EmptyState
         icon={ListChecks}
@@ -114,7 +119,7 @@ async function ChecklistContent({ searchParams }: Props) {
   return (
     <div className="space-y-3">
       <p className="text-xs text-muted-foreground">
-        {elementos.length} itens {elementos.length === 500 ? '(limite 500 — aplica filtros para ver mais)' : ''}
+        {elementos.length} itens {(elementosRaw?.length ?? 0) === 500 ? '(limite 500 — aplica filtros para ver mais)' : ''}
       </p>
       {groups.map((group, i) => (
         <div key={i} className="rounded-lg border overflow-hidden">
@@ -180,6 +185,7 @@ export default async function ChecklistPage({ searchParams }: Props) {
             apartamentos={apartamentos?.map(a => ({ id: a.id, label: a.codigo })) ?? []}
             fases={fases?.map(f => ({ id: f.id, label: f.nome })) ?? []}
             divisoes={divisoes?.map(d => ({ id: d.id, label: d.nome })) ?? undefined}
+            showTipoFilter
           />
         </Suspense>
       </div>
