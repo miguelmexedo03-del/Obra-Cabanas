@@ -12,6 +12,17 @@ function esc(s: string): string {
     .replace(/"/g, '&quot;')
 }
 
+function capitalizeEstado(estado: string): string {
+  switch (estado) {
+    case 'incompleto':
+      return 'Incompleto'
+    case 'todos':
+      return 'Todos'
+    default:
+      return 'Completo'
+  }
+}
+
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -75,7 +86,7 @@ export async function GET(request: NextRequest) {
   <div style="padding-bottom:20px;border-bottom:1px solid #e5e7eb;margin-bottom:20px">
     <h1 style="font-size:22px;font-weight:700;letter-spacing:-.025em">Consulta — Obra Cabanas</h1>
     <p style="color:#6b7280;font-size:13px;margin-top:4px">
-      Tipo: <strong>${esc(tipo)}</strong> · Fase: <strong>${esc(faseNome)}</strong> · Estado: <strong>${esc(estado)}</strong>
+      Tipo: <strong>${esc(tipo)}</strong> · Fase: <strong>${esc(faseNome)}</strong> · Estado: <strong>${esc(capitalizeEstado(estado))}</strong>
     </p>
     <p style="color:#6b7280;font-size:13px;margin-top:2px">Gerado em <strong>${esc(geradoEm)}</strong></p>
   </div>

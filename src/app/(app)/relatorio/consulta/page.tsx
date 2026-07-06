@@ -92,6 +92,15 @@ export default async function ConsultaPage({ searchParams }: Props) {
   const fases = (fasesData ?? []).map(f => ({ id: f.id, label: f.nome }))
 
   const params = await searchParams
+  const tipoParam = params.tipo
+  const tipo: TipoDivisao | null =
+    tipoParam && (TIPOS_DIVISAO as readonly string[]).includes(tipoParam)
+      ? (tipoParam as TipoDivisao)
+      : null
+  const faseId = params.fase ? Number(params.fase) : null
+
+  const isExportDisabled = !tipo || !faseId
+
   const exportQuery = new URLSearchParams(
     Object.entries(params).filter((e): e is [string, string] => Boolean(e[1]))
   ).toString()
@@ -104,7 +113,8 @@ export default async function ConsultaPage({ searchParams }: Props) {
         actions={
           <Button
             size="sm"
-            render={<a href={`/relatorio/consulta/export?${exportQuery}`} target="_blank" rel="noopener noreferrer" />}
+            disabled={isExportDisabled}
+            render={isExportDisabled ? undefined : <a href={`/relatorio/consulta/export?${exportQuery}`} target="_blank" rel="noopener noreferrer" />}
             nativeButton={false}
           >
             <FileDown className="h-4 w-4" />
