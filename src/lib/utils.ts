@@ -54,6 +54,38 @@ export function divisaoSortPriority(nome: string): number {
   return 9999
 }
 
+export const TIPOS_DIVISAO = [
+  'Entrada', 'Sala', 'Cozinha', 'Suite Principal', 'Suite 1', 'Suite 2',
+  'Outra Suite', 'Quarto', 'WC', 'Closet', 'Varanda',
+] as const
+
+export type TipoDivisao = typeof TIPOS_DIVISAO[number]
+
+// Categoriza uma divisão pelo tipo de compartimento, colapsando variantes
+// (WC Suite 1, WC de Serviço, WC(Suite Principal)...) numa única categoria "WC"
+// para responder a perguntas do tipo "todas as casas de banho".
+export function tipoDivisao(nome: string): TipoDivisao {
+  const n = nome
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/\s*\(/g, ' (')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  if (n.includes('wc')) return 'WC'
+  if (n.startsWith('closet')) return 'Closet'
+  if (n === 'sala') return 'Sala'
+  if (n === 'cozinha') return 'Cozinha'
+  if (n.startsWith('entrada')) return 'Entrada'
+  if (n.startsWith('varanda')) return 'Varanda'
+  if (n.startsWith('quarto')) return 'Quarto'
+  if (n === 'suite principal') return 'Suite Principal'
+  if (n.startsWith('suite 1')) return 'Suite 1'
+  if (n.startsWith('suite 2')) return 'Suite 2'
+  return 'Outra Suite'
+}
+
 export function sortElementos<T extends {
   elemento: string
   fase_id: number
