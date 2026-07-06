@@ -105,6 +105,7 @@ export default async function ConsultaPage({ searchParams }: Props) {
           <Button
             size="sm"
             render={<a href={`/relatorio/consulta/export?${exportQuery}`} target="_blank" rel="noopener noreferrer" />}
+            nativeButton={false}
           >
             <FileDown className="h-4 w-4" />
             Exportar
