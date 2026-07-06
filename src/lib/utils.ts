@@ -55,15 +55,16 @@ export function divisaoSortPriority(nome: string): number {
 }
 
 export const TIPOS_DIVISAO = [
-  'Entrada', 'Sala', 'Cozinha', 'Suite Principal', 'Suite 1', 'Suite 2',
-  'Outra Suite', 'Quarto', 'WC', 'Closet', 'Varanda',
+  'Entrada', 'Sala', 'Cozinha', 'Suites/Quartos', 'WC', 'Closet', 'Varanda',
 ] as const
 
 export type TipoDivisao = typeof TIPOS_DIVISAO[number]
 
 // Categoriza uma divisão pelo tipo de compartimento, colapsando variantes
-// (WC Suite 1, WC de Serviço, WC(Suite Principal)...) numa única categoria "WC"
-// para responder a perguntas do tipo "todas as casas de banho".
+// (WC Suite 1, WC de Serviço, WC(Suite Principal)...) numa única categoria "WC",
+// e todas as suites/quartos (Suite Principal, Suite 1, Suite 2, Quarto, etc.)
+// numa única categoria "Suites/Quartos" — não interessa distinguir qual suite
+// específica no dia-a-dia do filtro.
 export function tipoDivisao(nome: string): TipoDivisao {
   const n = nome
     .toLowerCase()
@@ -79,11 +80,8 @@ export function tipoDivisao(nome: string): TipoDivisao {
   if (n === 'cozinha') return 'Cozinha'
   if (n.startsWith('entrada')) return 'Entrada'
   if (n.startsWith('varanda')) return 'Varanda'
-  if (n.startsWith('quarto')) return 'Quarto'
-  if (n === 'suite principal') return 'Suite Principal'
-  if (n.startsWith('suite 1')) return 'Suite 1'
-  if (n.startsWith('suite 2')) return 'Suite 2'
-  return 'Outra Suite'
+  if (n.startsWith('suite') || n.startsWith('quarto')) return 'Suites/Quartos'
+  return 'Suites/Quartos'
 }
 
 export function sortElementos<T extends {
