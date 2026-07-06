@@ -9,3 +9,5 @@ Task 4: complete (commit 1756322..a5eac70, review clean — Minor noted: tipo/fa
 Task 5: complete (commit a5eac70..965d070, fix 965d070..6453b42, review approved after fix — Important fixed: missing nativeButton={false} on Exportar button; Minor noted: import consolidation, no error handling on query, both matching brief as-is)
 Task 6: complete (commit 6453b42..c3b9d04, review clean — Minor noted: faseId only isNaN-checked not integer/positive, matches existing pattern, not blocking)
 Task 7: complete (commit c3b9d04..b18989d, review clean)
+Final whole-branch review: complete (b8ab1fb..b18989d, Ready to merge — no Critical/Important; Minor #1/#2 fixed in 6830386, Minor #3/#4/#5 noted as future follow-ups not required now)
+Final review polish fixes: complete (6830386 estado capitalized + export button disabled; caught+fixed nativeButton inversion bug in own fix instructions, corrected in 77d30f2, re-reviewed and confirmed correct)
