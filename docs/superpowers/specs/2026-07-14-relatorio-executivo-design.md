@@ -76,7 +76,7 @@ Tudo calculado a partir de dados que **já existem** (`elementos`, `divisoes`, `
 - `pendentes[]` — **lista completa** dos itens por fazer, item a item, com `notas`. É esta granularidade que resolve o problema dos *"itens pequenos mas importantes que a agregação por fase esconde"* e que permite ao LLM realçar defeitos.
 - Sem timestamps, sem "dias parados" (ver §2, fora de âmbito).
 
-**Nota de implementação (a decidir no plano):** a regra das demãos (§5, regra 2) é determinística e um pouco frágil para um LLM contar sozinho. Se o preview mostrar que o LLM erra a distinção "última demão" vs "pintura", promover essa classificação para uma coluna calculada em SQL por (AP, divisão) e alimentá-la nos factos. v1 tenta com o LLM a aplicar a regra; a rede de segurança é pré-calcular em SQL.
+**Decisão (validada com o Miguel):** classificações determinísticas e frágeis — como a regra das demãos (§5, regra 2: "última demão" vs "pintura") — são **pré-calculadas em SQL** e alimentadas nos factos já resolvidas; o LLM só as escreve, não as deduz. Princípio geral: *"usar o SQL quando for preciso, o LLM depois escreve."* Assim, os factos por AP incluem, por (divisão), o estado de pintura já classificado (`pintura` | `ultima_demao` | ok), poupando o LLM de contar demãos. O mesmo padrão aplica-se a qualquer outra regra que se revele frágil no preview.
 
 ---
 
