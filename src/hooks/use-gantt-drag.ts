@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useCallback } from 'react'
-import { addDays, differenceInDays, parseISO } from 'date-fns'
+import { addDays, format, parseISO } from 'date-fns'
 import { updateTarefa } from '@/app/actions/gantt'
 
 type DragType = 'move' | 'resize-start' | 'resize-end'
@@ -38,14 +38,16 @@ export function useGanttDrag(
     let newInicio = d.originalInicio
     let newFim = d.originalFim
 
+    // format() usa o fuso local; toISOString() converteria para UTC e recuaria
+    // 1 dia no horário de verão (meia-noite local = 23:00 UTC do dia anterior).
     if (d.type === 'move') {
-      newInicio = addDays(parseISO(d.originalInicio), deltaDays).toISOString().slice(0, 10)
-      newFim = addDays(parseISO(d.originalFim), deltaDays).toISOString().slice(0, 10)
+      newInicio = format(addDays(parseISO(d.originalInicio), deltaDays), 'yyyy-MM-dd')
+      newFim = format(addDays(parseISO(d.originalFim), deltaDays), 'yyyy-MM-dd')
     } else if (d.type === 'resize-start') {
-      const candidate = addDays(parseISO(d.originalInicio), deltaDays).toISOString().slice(0, 10)
+      const candidate = format(addDays(parseISO(d.originalInicio), deltaDays), 'yyyy-MM-dd')
       if (candidate < d.originalFim) newInicio = candidate
     } else {
-      const candidate = addDays(parseISO(d.originalFim), deltaDays).toISOString().slice(0, 10)
+      const candidate = format(addDays(parseISO(d.originalFim), deltaDays), 'yyyy-MM-dd')
       if (candidate > d.originalInicio) newFim = candidate
     }
     return { newInicio, newFim }
