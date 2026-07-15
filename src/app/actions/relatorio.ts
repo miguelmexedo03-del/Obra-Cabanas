@@ -56,9 +56,15 @@ export async function gravarInstrucoesAction(instrucoes: string): Promise<Ok> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Não autenticado.' }
 
-  // RLS já garante que só admin escreve; o erro do update reflete isso.
-  const { error } = await supabase.from('relatorio_config').update({ instrucoes_extra: parsed.data.instrucoes }).eq('id', 1)
-  if (error) return { success: false, error: 'Sem permissão ou erro ao gravar.' }
+  // RLS gate: um UPDATE bloqueado por 'using' afeta 0 linhas SEM erro.
+  // Por isso confirmamos que uma linha foi mesmo afetada via .select().
+  const { data, error } = await supabase
+    .from('relatorio_config')
+    .update({ instrucoes_extra: parsed.data.instrucoes })
+    .eq('id', 1)
+    .select('id')
+  if (error) return { success: false, error: 'Erro ao gravar.' }
+  if (!data || data.length === 0) return { success: false, error: 'Sem permissão para gravar.' }
   revalidatePath('/relatorio/executivo', 'layout')
   return { success: true }
 }
