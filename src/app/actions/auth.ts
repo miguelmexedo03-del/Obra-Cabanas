@@ -24,8 +24,9 @@ export async function login(_prev: unknown, formData: FormData): Promise<ActionR
   }
 
   const raw = formData.get('redirectTo')?.toString() ?? '/'
-  const redirectTo = raw.startsWith('/') ? raw : '/'
-  redirect(redirectTo)
+  // Aceitar apenas caminhos internos; '//host' e '/\host' são redirects externos.
+  const isSafe = raw.startsWith('/') && !raw.startsWith('//') && !raw.startsWith('/\\')
+  redirect(isSafe ? raw : '/')
 }
 
 export async function signup(_prev: unknown, formData: FormData): Promise<ActionResult> {

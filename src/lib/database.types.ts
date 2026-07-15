@@ -336,6 +336,24 @@ export type Database = {
         }
         Relationships: []
       }
+      relatorio_config: {
+        Row: {
+          id: number
+          instrucoes_extra: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          instrucoes_extra?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          instrucoes_extra?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tarefas_gantt: {
         Row: {
           apartamento_id: number
