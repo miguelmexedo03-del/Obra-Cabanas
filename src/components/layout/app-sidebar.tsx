@@ -1,7 +1,7 @@
 'use client'
 import {
   LayoutDashboard, Building2, ListChecks, GanttChartSquare,
-  KanbanSquare, BarChart3, Users, FileClock, User, BookOpen, PlusSquare, Search, FileText, Settings, LucideIcon,
+  KanbanSquare, BarChart3, Users, FileClock, User, BookOpen, PlusSquare, Search, FileText, Settings, Package, LucideIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import { NavItem } from './nav-item'
@@ -23,6 +23,7 @@ const NAV: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] 
   { href: '/apartamentos', label: 'Apartamentos', icon: Building2 },
   { href: '/checklist', label: 'Checklist', icon: ListChecks },
   { href: '/gerir-itens', label: 'Gerir Itens', icon: PlusSquare },
+  { href: '/materiais', label: 'Materiais', icon: Package },
   { href: '/relatorio/consulta', label: 'Consulta', icon: Search },
   { href: '/relatorio/executivo', label: 'Relatório executivo', icon: FileText, exact: true },
   { href: '/gantt', label: 'Gantt', icon: GanttChartSquare },
