@@ -11,7 +11,10 @@ export default async function MateriaisPage() {
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Materiais</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-semibold">Materiais</h1>
+          <a href="/materiais/categorias" className="text-sm underline">Gerir categorias</a>
+        </div>
       </div>
       <TabelaMateriais apartamentos={apartamentos ?? []} categorias={categorias ?? []} />
     </div>
