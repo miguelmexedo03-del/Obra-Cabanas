@@ -71,6 +71,9 @@ interface Props {
 export function TabelaMateriais({ apartamentos, categorias }: Props) {
   const [apId, setApId] = useState<number>(apartamentos[0]?.id ?? 1)
   const [rows, setRows] = useState<Map<number, VistaRow>>(new Map())
+  // AP a que os `rows` atualmente carregados pertencem — evita que os inputs "defaultValue"
+  // fiquem a mostrar dados do AP anterior enquanto o fetch do novo AP ainda não resolveu.
+  const [loadedFor, setLoadedFor] = useState<number | null>(null)
   // material_id -> lista de depende_de_material_id (dependências completas, não só as pendentes)
   const [deps, setDeps] = useState<Map<number, number[]>>(new Map())
   // categoria_id -> valor selecionado no combo "adicionar dependência" dessa linha
@@ -90,6 +93,7 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
       if (row) m.set(row.categoria_id, row)
     }
     setRows(m)
+    setLoadedFor(ap)
 
     const ids = Array.from(m.values()).map(row => row.id)
     if (ids.length === 0) { setDeps(new Map()); return }
@@ -166,7 +170,11 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
           </tr>
         </thead>
         <tbody>
-          {categorias.map(cat => {
+          {loadedFor !== apId ? (
+            <tr>
+              <td colSpan={7} className="py-2 pr-3 text-muted-foreground">A carregar…</td>
+            </tr>
+          ) : categorias.map(cat => {
             const row = rows.get(cat.id)
             const estado = row?.estado ?? 'por_encomendar'
             const bloqueado = row?.bloqueado ?? false
