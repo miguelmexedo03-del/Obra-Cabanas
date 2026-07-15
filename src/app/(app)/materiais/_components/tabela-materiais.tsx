@@ -33,9 +33,23 @@ interface VistaRow {
 
 type MateriaisComEstadoRow = Database['public']['Views']['materiais_com_estado']['Row']
 
+// Só as colunas efetivamente pedidas no .select() de `carregar` — evita reclamar apartamento_id/updated_at
+// que nem sequer são selecionadas (e que esta função não usa).
+type MateriaisComEstadoRowSelecionada = Pick<
+  MateriaisComEstadoRow,
+  | 'id'
+  | 'categoria_id'
+  | 'estado'
+  | 'localizacao'
+  | 'data_prevista_encomenda'
+  | 'data_prevista_aplicacao'
+  | 'bloqueado'
+  | 'dependencias_pendentes'
+>
+
 // A view devolve todas as colunas como nullable (é uma view); na prática id/categoria_id/estado
 // nunca vêm nulos para uma linha existente. Linhas incompletas são ignoradas em vez de forçadas com "any".
-function paraVistaRow(r: MateriaisComEstadoRow): VistaRow | null {
+function paraVistaRow(r: MateriaisComEstadoRowSelecionada): VistaRow | null {
   if (r.id == null || r.categoria_id == null || r.estado == null) return null
   return {
     id: r.id,
@@ -170,7 +184,7 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
             const valorSelecionado = novaDependencia.get(cat.id) ?? ''
 
             return (
-              <tr key={cat.id} className="border-b align-top">
+              <tr key={`${apId}-${cat.id}`} className="border-b align-top">
                 <td className="py-2 pr-3">{cat.nome}</td>
                 <td className="py-2 pr-3">
                   <select
