@@ -39,6 +39,9 @@ export async function previewRelatorioAction(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Não autenticado.' }
 
+  const { data: perfil } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (perfil?.role !== 'admin') return { success: false, error: 'Sem permissão.' }
+
   try {
     const facts = await getFacts(apartamentoId)
     const data = await gerarDeFactos(facts, instrucoesRascunho, getProvider())

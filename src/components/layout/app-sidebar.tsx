@@ -1,7 +1,7 @@
 'use client'
 import {
   LayoutDashboard, Building2, ListChecks, GanttChartSquare,
-  KanbanSquare, BarChart3, Users, FileClock, User, BookOpen, PlusSquare, Search, LucideIcon,
+  KanbanSquare, BarChart3, Users, FileClock, User, BookOpen, PlusSquare, Search, FileText, Settings, LucideIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import { NavItem } from './nav-item'
@@ -24,6 +24,7 @@ const NAV: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] 
   { href: '/checklist', label: 'Checklist', icon: ListChecks },
   { href: '/gerir-itens', label: 'Gerir Itens', icon: PlusSquare },
   { href: '/relatorio/consulta', label: 'Consulta', icon: Search },
+  { href: '/relatorio/executivo', label: 'Relatório executivo', icon: FileText, exact: true },
   { href: '/gantt', label: 'Gantt', icon: GanttChartSquare },
   { href: '/kanban', label: 'Kanban', icon: KanbanSquare },
   { href: '/lob', label: 'LoB', icon: BarChart3 },
@@ -32,6 +33,7 @@ const NAV: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] 
 const ADMIN_NAV: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
   { href: '/admin/users', label: 'Utilizadores', icon: Users },
   { href: '/admin/audit', label: 'Auditoria', icon: FileClock },
+  { href: '/relatorio/executivo/config', label: 'Instruções do relatório', icon: Settings },
 ]
 
 export function AppSidebar({ userName, userEmail, role }: AppSidebarProps) {
