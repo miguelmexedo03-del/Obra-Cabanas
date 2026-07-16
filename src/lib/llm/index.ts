@@ -6,7 +6,9 @@ import { GeminiProvider } from '@/lib/llm/gemini'
 export function getProvider(): LLMProvider {
   const provider = process.env.LLM_PROVIDER ?? 'gemini'
   const apiKey = process.env.LLM_API_KEY ?? ''
-  const model = process.env.LLM_MODEL ?? 'gemini-2.5-flash-lite'
+  // Alias que aponta sempre para a flash-lite atual — evita "model no longer available"
+  // quando a Google descontinua versões numeradas (ex.: 2.5-flash-lite p/ contas novas).
+  const model = process.env.LLM_MODEL ?? 'gemini-flash-lite-latest'
 
   switch (provider) {
     case 'gemini':
