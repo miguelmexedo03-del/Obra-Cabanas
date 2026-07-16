@@ -63,19 +63,21 @@ Depende de:
 ## 4. Mudanças de schema — migration `0014_materiais_refinamento.sql`
 
 ```sql
--- 1. Remover a data de encomenda (fica só a de aplicação)
+-- 1. View deixa de calcular "bloqueado"; removida primeiro porque depende da coluna abaixo.
+drop view materiais_com_estado;
+
+-- 2. Remover a data de encomenda (fica só a de aplicação)
 alter table materiais drop column data_prevista_encomenda;
 
--- 2. Sítio físico (só relevante quando em stock)
+-- 3. Sítio físico (só relevante quando em stock)
 alter table materiais add column sitio text
   check (sitio in ('em_armazem', 'em_obra'));
 
--- 3. Notas livres, uma por linha na UI
+-- 4. Notas livres, uma por linha na UI
 alter table materiais add column notas text[] not null default '{}';
-
--- 4. View deixa de calcular "bloqueado"; a UI passa a ler a tabela `materiais`.
-drop view materiais_com_estado;
 ```
+
+> Ordem importante: a view `materiais_com_estado` depende de `data_prevista_encomenda`, por isso tem de ser removida **antes** do `drop column`.
 
 - `material_dependencias` **mantém-se** tal como está (ligações a categorias do mesmo AP).
 - A view `materiais_com_estado` é **removida**. A UI passa a fazer `select` diretamente sobre `materiais` (RLS de leitura já permite). As ligações a categorias continuam a ser lidas por query separada a `material_dependencias`, como já acontece hoje.
