@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
@@ -66,6 +67,7 @@ interface Props {
 }
 
 export function TabelaMateriais({ apartamentos, categorias }: Props) {
+  const router = useRouter()
   const [apId, setApId] = useState<number>(apartamentos[0]?.id ?? 1)
   const [rows, setRows] = useState<Map<number, MaterialLinha>>(new Map())
   // AP a que os `rows` atualmente carregados pertencem — evita que os inputs "defaultValue"
@@ -142,6 +144,7 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
   async function atribuirCategoria(categoriaId: number) {
     const r = await upsertMaterial(apId, categoriaId, {})
     if (!r.success) { toast.error(r.error); return }
+    toast.success('Categoria adicionada a este apartamento.')
     await carregar(apId)
   }
 
@@ -153,12 +156,16 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
     if (!criada.success) { toast.error(criada.error); return }
     setNomeNovaCategoria('')
     await atribuirCategoria(criada.id)
+    // `categorias` vem da prop do server component: sem refresh, a categoria recém-criada
+    // fica em `rows` mas nunca aparece em `categoriasAtribuidas` (que filtra a prop).
+    router.refresh()
   }
 
   // Tira a categoria deste AP.
   async function removerCategoria(categoriaId: number) {
     const r = await removeMaterial(apId, categoriaId)
     if (!r.success) { toast.error(r.error); return }
+    toast.success('Categoria removida deste apartamento.')
     await carregar(apId)
   }
 
