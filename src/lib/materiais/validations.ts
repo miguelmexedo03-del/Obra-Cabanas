@@ -2,9 +2,10 @@ import { z } from 'zod'
 
 export const materialPatchSchema = z.object({
   estado: z.enum(['por_encomendar', 'encomendado', 'em_stock']).optional(),
+  sitio: z.enum(['em_armazem', 'em_obra']).nullable().optional(),
   localizacao: z.string().max(200).nullable().optional(),
-  data_prevista_encomenda: z.string().date().nullable().optional(),
   data_prevista_aplicacao: z.string().date().nullable().optional(),
+  notas: z.array(z.string().max(500)).optional(),
 })
 
 export const categoriaSchema = z.object({

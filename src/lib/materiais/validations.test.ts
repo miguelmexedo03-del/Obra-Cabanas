@@ -9,6 +9,22 @@ describe('materialPatchSchema', () => {
   it('rejeita estado invalido', () => {
     expect(materialPatchSchema.safeParse({ estado: 'aplicado' }).success).toBe(false)
   })
+  it('aceita sitio válido e null', () => {
+    expect(materialPatchSchema.safeParse({ sitio: 'em_armazem' }).success).toBe(true)
+    expect(materialPatchSchema.safeParse({ sitio: null }).success).toBe(true)
+  })
+  it('rejeita sitio fora do enum', () => {
+    expect(materialPatchSchema.safeParse({ sitio: 'algures' }).success).toBe(false)
+  })
+  it('aceita notas como array de strings', () => {
+    expect(materialPatchSchema.safeParse({ notas: ['a', 'b'] }).success).toBe(true)
+  })
+  it('já não aceita data_prevista_encomenda', () => {
+    const r = materialPatchSchema.safeParse({ data_prevista_encomenda: '2026-01-01' })
+    // strip: o campo desconhecido é ignorado; o objeto resultante não o contém
+    expect(r.success).toBe(true)
+    if (r.success) expect('data_prevista_encomenda' in r.data).toBe(false)
+  })
 })
 
 describe('categoriaSchema', () => {
