@@ -5,8 +5,8 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { upsertMaterial, addDependencia, removeDependencia } from '@/app/actions/materiais'
-import { ESTADOS, estadoLabel } from '@/lib/materiais/estado'
-import type { EstadoMaterial } from '@/lib/materiais/types'
+import { ESTADOS, estadoLabel, SITIOS, sitioLabel } from '@/lib/materiais/estado'
+import type { EstadoMaterial, Sitio } from '@/lib/materiais/types'
 import type { Database } from '@/lib/database.types'
 
 interface Categoria {
@@ -20,46 +20,43 @@ interface Apartamento {
   codigo: string
 }
 
-interface VistaRow {
+interface MaterialLinha {
   id: number
   categoria_id: number
   estado: EstadoMaterial
+  sitio: Sitio | null
   localizacao: string | null
-  data_prevista_encomenda: string | null
   data_prevista_aplicacao: string | null
-  bloqueado: boolean
-  dependencias_pendentes: string[]
+  notas: string[]
 }
 
-type MateriaisComEstadoRow = Database['public']['Views']['materiais_com_estado']['Row']
+type MateriaisRow = Database['public']['Tables']['materiais']['Row']
 
 // Só as colunas efetivamente pedidas no .select() de `carregar` — evita reclamar apartamento_id/updated_at
 // que nem sequer são selecionadas (e que esta função não usa).
-type MateriaisComEstadoRowSelecionada = Pick<
-  MateriaisComEstadoRow,
+type MateriaisRowSelecionada = Pick<
+  MateriaisRow,
   | 'id'
   | 'categoria_id'
   | 'estado'
+  | 'sitio'
   | 'localizacao'
-  | 'data_prevista_encomenda'
   | 'data_prevista_aplicacao'
-  | 'bloqueado'
-  | 'dependencias_pendentes'
+  | 'notas'
 >
 
-// A view devolve todas as colunas como nullable (é uma view); na prática id/categoria_id/estado
-// nunca vêm nulos para uma linha existente. Linhas incompletas são ignoradas em vez de forçadas com "any".
-function paraVistaRow(r: MateriaisComEstadoRowSelecionada): VistaRow | null {
+// id/categoria_id/estado nunca vêm nulos para uma linha existente da tabela, mas mantemos o
+// filtro defensivo (sem "any") em vez de forçar o tipo.
+function paraMaterialLinha(r: MateriaisRowSelecionada): MaterialLinha | null {
   if (r.id == null || r.categoria_id == null || r.estado == null) return null
   return {
     id: r.id,
     categoria_id: r.categoria_id,
     estado: r.estado as EstadoMaterial,
+    sitio: (r.sitio as Sitio | null) ?? null,
     localizacao: r.localizacao,
-    data_prevista_encomenda: r.data_prevista_encomenda,
     data_prevista_aplicacao: r.data_prevista_aplicacao,
-    bloqueado: r.bloqueado ?? false,
-    dependencias_pendentes: r.dependencias_pendentes ?? [],
+    notas: r.notas ?? [],
   }
 }
 
@@ -70,7 +67,7 @@ interface Props {
 
 export function TabelaMateriais({ apartamentos, categorias }: Props) {
   const [apId, setApId] = useState<number>(apartamentos[0]?.id ?? 1)
-  const [rows, setRows] = useState<Map<number, VistaRow>>(new Map())
+  const [rows, setRows] = useState<Map<number, MaterialLinha>>(new Map())
   // AP a que os `rows` atualmente carregados pertencem — evita que os inputs "defaultValue"
   // fiquem a mostrar dados do AP anterior enquanto o fetch do novo AP ainda não resolveu.
   const [loadedFor, setLoadedFor] = useState<number | null>(null)
@@ -82,14 +79,14 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
   const carregar = useCallback(async (ap: number) => {
     const supabase = createClient()
     const { data, error } = await supabase
-      .from('materiais_com_estado')
-      .select('id, categoria_id, estado, localizacao, data_prevista_encomenda, data_prevista_aplicacao, bloqueado, dependencias_pendentes')
+      .from('materiais')
+      .select('id, categoria_id, estado, sitio, localizacao, data_prevista_aplicacao, notas')
       .eq('apartamento_id', ap)
     if (error) { toast.error(error.message); return }
 
-    const m = new Map<number, VistaRow>()
+    const m = new Map<number, MaterialLinha>()
     for (const r of data ?? []) {
-      const row = paraVistaRow(r)
+      const row = paraMaterialLinha(r)
       if (row) m.set(row.categoria_id, row)
     }
     setRows(m)
@@ -119,6 +116,10 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
     const r = await upsertMaterial(apId, categoriaId, patch)
     if (!r.success) { toast.error(r.error); return }
     await carregar(apId)
+  }
+
+  async function gravarNotas(categoriaId: number, notas: string[]) {
+    await editar(categoriaId, { notas })
   }
 
   async function adicionarDependencia(materialId: number, outroMaterialId: number) {
@@ -162,22 +163,20 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
           <tr className="text-left border-b">
             <th className="py-2 pr-3">Categoria</th>
             <th className="py-2 pr-3">Estado</th>
+            <th className="py-2 pr-3">Sítio</th>
             <th className="py-2 pr-3">Localização</th>
-            <th className="py-2 pr-3">Data encomenda</th>
             <th className="py-2 pr-3">Data aplicação</th>
-            <th className="py-2 pr-3">Bloqueio</th>
-            <th className="py-2 pr-3">Dependências</th>
+            <th className="py-2 pr-3">Depende de</th>
           </tr>
         </thead>
         <tbody>
           {loadedFor !== apId ? (
             <tr>
-              <td colSpan={7} className="py-2 pr-3 text-muted-foreground">A carregar…</td>
+              <td colSpan={6} className="py-2 pr-3 text-muted-foreground">A carregar…</td>
             </tr>
           ) : categorias.map(cat => {
             const row = rows.get(cat.id)
             const estado = row?.estado ?? 'por_encomendar'
-            const bloqueado = row?.bloqueado ?? false
             const depsAtuais = row ? (deps.get(row.id) ?? []) : []
 
             // outras categorias do mesmo AP que já têm linha criada (id existe) e ainda não são dependência
@@ -204,37 +203,37 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
                   </select>
                 </td>
                 <td className="py-2 pr-3">
-                  <input
-                    className="border rounded px-2 py-1 w-40"
-                    defaultValue={row?.localizacao ?? ''}
-                    onBlur={e => editar(cat.id, { localizacao: e.target.value || null })}
-                  />
+                  {estado === 'em_stock' ? (
+                    <select
+                      className="border rounded px-2 py-1"
+                      value={row?.sitio ?? ''}
+                      onChange={e => editar(cat.id, { sitio: e.target.value || null })}
+                    >
+                      <option value="">—</option>
+                      {SITIOS.map(s => <option key={s} value={s}>{sitioLabel(s)}</option>)}
+                    </select>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </td>
                 <td className="py-2 pr-3">
-                  <input
-                    type="date"
-                    className="border rounded px-2 py-1"
-                    defaultValue={row?.data_prevista_encomenda ?? ''}
-                    onChange={e => editar(cat.id, { data_prevista_encomenda: e.target.value || null })}
-                  />
+                  {estado === 'em_stock' ? (
+                    <input
+                      className="border rounded px-2 py-1 w-40"
+                      defaultValue={row?.localizacao ?? ''}
+                      onBlur={e => editar(cat.id, { localizacao: e.target.value || null })}
+                    />
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
                 </td>
                 <td className="py-2 pr-3">
                   <input
                     type="date"
                     className="border rounded px-2 py-1"
                     defaultValue={row?.data_prevista_aplicacao ?? ''}
-                    onChange={e => {
-                      if (bloqueado && e.target.value) {
-                        toast.warning('Este material está bloqueado por dependências ainda não em stock.')
-                      }
-                      editar(cat.id, { data_prevista_aplicacao: e.target.value || null })
-                    }}
+                    onChange={e => editar(cat.id, { data_prevista_aplicacao: e.target.value || null })}
                   />
-                </td>
-                <td className="py-2 pr-3">
-                  {bloqueado
-                    ? <span className="text-amber-600">🟡 bloqueado por: {(row?.dependencias_pendentes ?? []).join(', ')}</span>
-                    : <span className="text-emerald-600">🟢 pronto</span>}
                 </td>
                 <td className="py-2 pr-3">
                   {!row ? (
@@ -248,7 +247,7 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
                             const nome = depCategoriaId != null ? nomePorCategoria.get(depCategoriaId) : undefined
                             return (
                               <li key={depMaterialId} className="flex items-center gap-1">
-                                <span>{nome ?? `#${depMaterialId}`}</span>
+                                <span>• {nome ?? `#${depMaterialId}`}</span>
                                 <Button
                                   variant="ghost"
                                   size="icon-xs"
@@ -261,33 +260,66 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
                           })}
                         </ul>
                       )}
-                      {candidatos.length > 0 && (
-                        <div className="flex items-center gap-1">
-                          <select
-                            className="border rounded px-2 py-1 text-xs"
-                            value={valorSelecionado}
-                            onChange={e => setNovaDependencia(prev => new Map(prev).set(cat.id, e.target.value))}
-                          >
-                            <option value="">+ adicionar dependência</option>
-                            {candidatos.map(c => (
-                              <option key={c.id} value={c.id}>{c.nome}</option>
-                            ))}
-                          </select>
-                          <Button
-                            variant="outline"
-                            size="xs"
-                            disabled={!valorSelecionado}
-                            onClick={() => {
-                              const outra = rows.get(Number(valorSelecionado))
-                              if (!outra) return
-                              adicionarDependencia(row.id, outra.id)
-                              setNovaDependencia(prev => new Map(prev).set(cat.id, ''))
-                            }}
-                          >
-                            Ligar
-                          </Button>
-                        </div>
+                      {(row.notas ?? []).length > 0 && (
+                        <ul className="space-y-1">
+                          {row.notas.map((nota, i) => (
+                            <li key={i} className="flex items-center gap-1">
+                              <input
+                                className="border rounded px-2 py-1 text-xs w-56"
+                                defaultValue={nota}
+                                onBlur={e => {
+                                  const next = [...row.notas]
+                                  next[i] = e.target.value
+                                  gravarNotas(cat.id, next.filter(n => n.trim() !== ''))
+                                }}
+                              />
+                              <Button
+                                variant="ghost"
+                                size="icon-xs"
+                                onClick={() => gravarNotas(cat.id, row.notas.filter((_, j) => j !== i))}
+                              >
+                                ×
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
                       )}
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {candidatos.length > 0 && (
+                          <>
+                            <select
+                              className="border rounded px-2 py-1 text-xs"
+                              value={valorSelecionado}
+                              onChange={e => setNovaDependencia(prev => new Map(prev).set(cat.id, e.target.value))}
+                            >
+                              <option value="">+ categoria</option>
+                              {candidatos.map(c => (
+                                <option key={c.id} value={c.id}>{c.nome}</option>
+                              ))}
+                            </select>
+                            <Button
+                              variant="outline"
+                              size="xs"
+                              disabled={!valorSelecionado}
+                              onClick={() => {
+                                const outra = rows.get(Number(valorSelecionado))
+                                if (!outra) return
+                                adicionarDependencia(row.id, outra.id)
+                                setNovaDependencia(prev => new Map(prev).set(cat.id, ''))
+                              }}
+                            >
+                              Ligar
+                            </Button>
+                          </>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => gravarNotas(cat.id, [...(row.notas ?? []), ''])}
+                        >
+                          + nota
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </td>

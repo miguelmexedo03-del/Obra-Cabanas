@@ -332,30 +332,33 @@ export type Database = {
           apartamento_id: number
           categoria_id: number
           data_prevista_aplicacao: string | null
-          data_prevista_encomenda: string | null
           estado: string
           id: number
           localizacao: string | null
+          notas: string[]
+          sitio: string | null
           updated_at: string
         }
         Insert: {
           apartamento_id: number
           categoria_id: number
           data_prevista_aplicacao?: string | null
-          data_prevista_encomenda?: string | null
           estado?: string
           id?: never
           localizacao?: string | null
+          notas?: string[]
+          sitio?: string | null
           updated_at?: string
         }
         Update: {
           apartamento_id?: number
           categoria_id?: number
           data_prevista_aplicacao?: string | null
-          data_prevista_encomenda?: string | null
           estado?: string
           id?: never
           localizacao?: string | null
+          notas?: string[]
+          sitio?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -397,24 +400,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "material_dependencias_depende_de_material_id_fkey"
-            columns: ["depende_de_material_id"]
-            isOneToOne: false
-            referencedRelation: "materiais_com_estado"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "material_dependencias_material_id_fkey"
             columns: ["material_id"]
             isOneToOne: false
             referencedRelation: "materiais"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "material_dependencias_material_id_fkey"
-            columns: ["material_id"]
-            isOneToOne: false
-            referencedRelation: "materiais_com_estado"
             referencedColumns: ["id"]
           },
         ]
@@ -589,36 +578,6 @@ export type Database = {
             columns: ["responsavel_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      materiais_com_estado: {
-        Row: {
-          apartamento_id: number | null
-          bloqueado: boolean | null
-          categoria_id: number | null
-          data_prevista_aplicacao: string | null
-          data_prevista_encomenda: string | null
-          dependencias_pendentes: string[] | null
-          estado: string | null
-          id: number | null
-          localizacao: string | null
-          updated_at: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "materiais_apartamento_id_fkey"
-            columns: ["apartamento_id"]
-            isOneToOne: false
-            referencedRelation: "apartamentos"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "materiais_categoria_id_fkey"
-            columns: ["categoria_id"]
-            isOneToOne: false
-            referencedRelation: "categorias_material"
             referencedColumns: ["id"]
           },
         ]
