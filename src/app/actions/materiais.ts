@@ -31,7 +31,7 @@ export async function upsertMaterial(apartamentoId: number, categoriaId: number,
   return { success: true }
 }
 
-export async function addCategoria(nome: string): Promise<Ok> {
+export async function addCategoria(nome: string): Promise<{ success: true; id: number } | { success: false; error: string }> {
   const parsed = categoriaSchema.safeParse({ nome })
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? 'Inválido.' }
 
@@ -43,9 +43,10 @@ export async function addCategoria(nome: string): Promise<Ok> {
     .insert({ nome: parsed.data.nome })
     .select('id')
   if (error) return { success: false, error: 'Já existe ou sem permissão.' }
-  if (!data || data.length === 0) return { success: false, error: 'Sem permissão para gravar.' }
+  const id = data?.[0]?.id
+  if (id == null) return { success: false, error: 'Sem permissão para gravar.' }
   revalidatePath('/materiais', 'layout')
-  return { success: true }
+  return { success: true, id }
 }
 
 export async function renameCategoria(id: number, nome: string): Promise<Ok> {
@@ -100,6 +101,22 @@ export async function removeDependencia(materialId: number, dependeDeMaterialId:
     .delete()
     .eq('material_id', materialId)
     .eq('depende_de_material_id', dependeDeMaterialId)
+  if (error) return { success: false, error: error.message }
+  revalidatePath('/materiais', 'layout')
+  return { success: true }
+}
+
+// Tira uma categoria de um apartamento (apaga a linha materiais desse AP x categoria).
+// As dependencias caem por FK on delete cascade; as notas vivem na propria linha.
+export async function removeMaterial(apartamentoId: number, categoriaId: number): Promise<Ok> {
+  const { supabase, user } = await requireUser()
+  if (!user) return { success: false, error: 'Não autenticado.' }
+
+  const { error } = await supabase
+    .from('materiais')
+    .delete()
+    .eq('apartamento_id', apartamentoId)
+    .eq('categoria_id', categoriaId)
   if (error) return { success: false, error: error.message }
   revalidatePath('/materiais', 'layout')
   return { success: true }
