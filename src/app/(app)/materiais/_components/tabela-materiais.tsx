@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
-import { upsertMaterial, addDependencia, removeDependencia } from '@/app/actions/materiais'
+import { upsertMaterial, addCategoria, removeMaterial, addDependencia, removeDependencia } from '@/app/actions/materiais'
 import { ESTADOS, estadoLabel, SITIOS, sitioLabel } from '@/lib/materiais/estado'
 import type { EstadoMaterial, Sitio } from '@/lib/materiais/types'
 import type { Database } from '@/lib/database.types'
@@ -75,6 +75,10 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
   const [deps, setDeps] = useState<Map<number, number[]>>(new Map())
   // categoria_id -> valor selecionado no combo "adicionar dependência" dessa linha
   const [novaDependencia, setNovaDependencia] = useState<Map<number, string>>(new Map())
+  // categoria da paleta selecionada no dropdown "adicionar da paleta"
+  const [novaCategoriaPaleta, setNovaCategoriaPaleta] = useState<string>('')
+  // texto do input "criar nova categoria e adicionar a este AP"
+  const [nomeNovaCategoria, setNomeNovaCategoria] = useState<string>('')
 
   const carregar = useCallback(async (ap: number) => {
     const supabase = createClient()
@@ -134,6 +138,30 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
     await carregar(apId)
   }
 
+  // Atribui uma categoria da paleta a este AP: cria a linha materiais com defaults.
+  async function atribuirCategoria(categoriaId: number) {
+    const r = await upsertMaterial(apId, categoriaId, {})
+    if (!r.success) { toast.error(r.error); return }
+    await carregar(apId)
+  }
+
+  // Cria uma categoria nova na paleta (Task 1: addCategoria devolve id) e atribui-a logo a este AP.
+  async function criarEAtribuir(nome: string) {
+    const nomeTrim = nome.trim()
+    if (!nomeTrim) return
+    const criada = await addCategoria(nomeTrim)
+    if (!criada.success) { toast.error(criada.error); return }
+    setNomeNovaCategoria('')
+    await atribuirCategoria(criada.id)
+  }
+
+  // Tira a categoria deste AP.
+  async function removerCategoria(categoriaId: number) {
+    const r = await removeMaterial(apId, categoriaId)
+    if (!r.success) { toast.error(r.error); return }
+    await carregar(apId)
+  }
+
   // categoria_id -> nome, para etiquetar as dependências
   const nomePorCategoria = useMemo(() => {
     const m = new Map<number, string>()
@@ -147,6 +175,11 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
     for (const row of rows.values()) m.set(row.id, row.categoria_id)
     return m
   }, [rows])
+
+  // categorias atribuidas a este AP = as que tem linha em `rows`, ordenadas pela paleta
+  const categoriasAtribuidas = categorias.filter(c => rows.has(c.id))
+  // categorias da paleta ainda nao atribuidas (para o dropdown de adicionar)
+  const categoriasPorAtribuir = categorias.filter(c => !rows.has(c.id))
 
   return (
     <div className="space-y-3 max-w-6xl">
@@ -174,25 +207,41 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
             <tr>
               <td colSpan={6} className="py-2 pr-3 text-muted-foreground">A carregar…</td>
             </tr>
-          ) : categorias.map(cat => {
-            const row = rows.get(cat.id)
-            const estado = row?.estado ?? 'por_encomendar'
-            const depsAtuais = row ? (deps.get(row.id) ?? []) : []
+          ) : categoriasAtribuidas.length === 0 ? (
+            <tr>
+              <td colSpan={6} className="py-2 pr-3 text-muted-foreground">
+                Nenhuma categoria atribuída a este apartamento. Adiciona uma abaixo.
+              </td>
+            </tr>
+          ) : categoriasAtribuidas.map(cat => {
+            const row = rows.get(cat.id)!
+            const estado = row.estado
+            const depsAtuais = deps.get(row.id) ?? []
 
-            // outras categorias do mesmo AP que já têm linha criada (id existe) e ainda não são dependência
-            const candidatos = row
-              ? categorias.filter(c => {
-                  if (c.id === cat.id) return false
-                  const outra = rows.get(c.id)
-                  if (!outra) return false
-                  return !depsAtuais.includes(outra.id)
-                })
-              : []
+            // outras categorias do mesmo AP que já têm linha criada e ainda não são dependência
+            const candidatos = categorias.filter(c => {
+              if (c.id === cat.id) return false
+              const outra = rows.get(c.id)
+              if (!outra) return false
+              return !depsAtuais.includes(outra.id)
+            })
             const valorSelecionado = novaDependencia.get(cat.id) ?? ''
 
             return (
               <tr key={`${apId}-${cat.id}`} className="border-b align-top">
-                <td className="py-2 pr-3">{cat.nome}</td>
+                <td className="py-2 pr-3">
+                  <div className="flex items-center gap-1">
+                    <span>{cat.nome}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      title="Remover esta categoria deste apartamento"
+                      onClick={() => removerCategoria(cat.id)}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                </td>
                 <td className="py-2 pr-3">
                   <select
                     className="border rounded px-2 py-1"
@@ -206,7 +255,7 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
                   {estado === 'em_stock' ? (
                     <select
                       className="border rounded px-2 py-1"
-                      value={row?.sitio ?? ''}
+                      value={row.sitio ?? ''}
                       onChange={e => editar(cat.id, { sitio: e.target.value || null })}
                     >
                       <option value="">—</option>
@@ -220,7 +269,7 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
                   {estado === 'em_stock' ? (
                     <input
                       className="border rounded px-2 py-1 w-40"
-                      defaultValue={row?.localizacao ?? ''}
+                      defaultValue={row.localizacao ?? ''}
                       onBlur={e => editar(cat.id, { localizacao: e.target.value || null })}
                     />
                   ) : (
@@ -231,15 +280,12 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
                   <input
                     type="date"
                     className="border rounded px-2 py-1"
-                    defaultValue={row?.data_prevista_aplicacao ?? ''}
+                    defaultValue={row.data_prevista_aplicacao ?? ''}
                     onChange={e => editar(cat.id, { data_prevista_aplicacao: e.target.value || null })}
                   />
                 </td>
                 <td className="py-2 pr-3">
-                  {!row ? (
-                    <span className="text-muted-foreground text-xs">Edita a linha para poderes ligar dependências.</span>
-                  ) : (
-                    <div className="space-y-1">
+                  <div className="space-y-1">
                       {depsAtuais.length > 0 && (
                         <ul className="space-y-1">
                           {depsAtuais.map(depMaterialId => {
@@ -320,14 +366,53 @@ export function TabelaMateriais({ apartamentos, categorias }: Props) {
                           + nota
                         </Button>
                       </div>
-                    </div>
-                  )}
+                  </div>
                 </td>
               </tr>
             )
           })}
         </tbody>
       </table>
+
+      <div className="flex items-end gap-4 flex-wrap pt-2">
+        <div className="flex items-center gap-1">
+          <select
+            className="border rounded px-2 py-1"
+            value={novaCategoriaPaleta}
+            onChange={e => setNovaCategoriaPaleta(e.target.value)}
+          >
+            <option value="">+ adicionar categoria (da paleta)</option>
+            {categoriasPorAtribuir.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+          </select>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!novaCategoriaPaleta}
+            onClick={() => {
+              atribuirCategoria(Number(novaCategoriaPaleta))
+              setNovaCategoriaPaleta('')
+            }}
+          >
+            Adicionar
+          </Button>
+        </div>
+        <div className="flex items-center gap-1">
+          <input
+            className="border rounded px-2 py-1"
+            placeholder="nova categoria…"
+            value={nomeNovaCategoria}
+            onChange={e => setNomeNovaCategoria(e.target.value)}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!nomeNovaCategoria.trim()}
+            onClick={() => criarEAtribuir(nomeNovaCategoria)}
+          >
+            Criar e adicionar
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }
