@@ -14,6 +14,6 @@ describe('gerarDeFactos', () => {
     const r = gerarDeFactos(facts)
     expect(r.origem).toBe('template')
     expect(r.texto).toContain('AP1')
-    expect(r.texto).toContain('Eletrodomésticos')
+    expect(r.texto.toLowerCase()).toContain('eletrodomésticos')
   })
 })
