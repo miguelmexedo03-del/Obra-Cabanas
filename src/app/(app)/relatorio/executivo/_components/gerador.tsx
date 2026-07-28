@@ -27,6 +27,7 @@ export function Gerador({ apartamentos }: Props) {
   const [erro, setErro] = useState<string | null>(null)
 
   const [lote, setLote] = useState<RelatorioResult[]>([])
+  const [progresso, setProgresso] = useState<string | null>(null)
 
   async function gerar() {
     setLoading(true)
@@ -44,18 +45,26 @@ export function Gerador({ apartamentos }: Props) {
     toast.success('Texto copiado para a área de transferência')
   }
 
+  const delay = (ms: number) => new Promise((res) => setTimeout(res, ms))
+
   async function gerarObraToda() {
     setLoading(true)
     setErro(null)
     setLote([])
     setResultado(null)
     const acc: RelatorioResult[] = []
-    for (const a of apartamentos) {
+    for (let i = 0; i < apartamentos.length; i++) {
+      const a = apartamentos[i]
+      setProgresso(`A gerar ${a.codigo} (${i + 1} de ${apartamentos.length})…`)
       const r = await gerarRelatorioAction(a.id)
       if (r.success) acc.push(r.data)
       else acc.push({ apartamento: a.codigo, texto: `(erro: ${r.error})`, origem: 'template' })
+      setLote([...acc])
+      // Alguns APs acionam o LLM (reescrita de notas/observações) — espaçar
+      // as chamadas para não esbarrar no limite do free tier do Gemini.
+      if (i < apartamentos.length - 1) await delay(1500)
     }
-    setLote(acc)
+    setProgresso(null)
     setLoading(false)
   }
 
@@ -100,6 +109,8 @@ export function Gerador({ apartamentos }: Props) {
       </div>
 
       {erro && <p className="text-sm text-destructive">{erro}</p>}
+
+      {progresso && <p className="text-sm text-muted-foreground">{progresso}</p>}
 
       {resultado && (
         <div className="rounded-lg border border-border bg-card p-4">

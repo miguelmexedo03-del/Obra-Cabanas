@@ -14,7 +14,7 @@ export async function gerarRelatorioAction(apartamentoId: number): Promise<Resul
 
   try {
     const facts = await getFacts(apartamentoId)
-    return { success: true, data: gerarDeFactos(facts) }
+    return { success: true, data: await gerarDeFactos(facts) }
   } catch (e) {
     return { success: false, error: e instanceof Error ? e.message : 'Erro ao gerar.' }
   }
