@@ -1,7 +1,7 @@
 'use client'
 import {
   LayoutDashboard, Building2, ListChecks, GanttChartSquare,
-  KanbanSquare, BarChart3, Users, FileClock, User, BookOpen, PlusSquare, Search, FileText, Settings, Package, LucideIcon,
+  KanbanSquare, Users, FileClock, User, BookOpen, PlusSquare, Search, FileText, Settings, Package, LucideIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -29,7 +29,6 @@ const NAV: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] 
   { href: '/relatorio/executivo', label: 'Relatório executivo', icon: FileText, exact: true },
   { href: '/gantt', label: 'Gantt', icon: GanttChartSquare },
   { href: '/kanban', label: 'Kanban', icon: KanbanSquare },
-  { href: '/lob', label: 'LoB', icon: BarChart3 },
 ]
 
 const ADMIN_NAV: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
@@ -44,14 +43,14 @@ export function AppSidebar({ userName, userEmail, role }: AppSidebarProps) {
   return (
     <aside className="w-60 shrink-0 border-r border-sidebar-border bg-sidebar flex flex-col h-screen sticky top-0">
       {/* Brand */}
-      <div className="px-4 h-14 flex items-center border-b border-sidebar-border">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white p-1">
-            <Image src="/logo-tar.png" alt="tar" width={28} height={28} className="h-full w-full object-contain" priority />
+      <div className="px-4 h-20 flex items-center border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white p-1.5 shadow-[var(--shadow-float)]">
+            <Image src="/logo-tar.png" alt="tar" width={44} height={44} className="h-full w-full object-contain" priority />
           </div>
           <div className="flex flex-col leading-none">
-            <span className="text-sm font-semibold tracking-tight text-sidebar-accent-foreground">tar</span>
-            <span className="text-[10px] tracking-wide text-sidebar-foreground/70">Obra Cabanas</span>
+            <span className="text-lg font-semibold tracking-tight text-sidebar-accent-foreground">tar</span>
+            <span className="text-[11px] tracking-wide text-sidebar-foreground/70">Obra Cabanas</span>
           </div>
         </div>
       </div>

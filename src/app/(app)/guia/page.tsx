@@ -1,19 +1,5 @@
 import { ArrowRight, AlertCircle } from 'lucide-react'
-import { BarChart3, CheckSquare, Building2, Kanban, TrendingUp } from 'lucide-react'
-
-const fases = [
-  { nome: 'Teto', cor: '#6B7280', desc: 'Verificação e nivelamento do teto em bruto.' },
-  { nome: 'Remendos Teto', cor: '#9CA3AF', desc: 'Correção de parafusos, focos, fissuras e humidade.' },
-  { nome: 'Pintura Teto', cor: '#D1D5DB', desc: 'Demolição, Extracoat, primário e acabamento final.' },
-  { nome: 'Paredes', cor: '#3B82F6', desc: 'Pedra, pladur e fecho de paredes.' },
-  { nome: 'Remendo Paredes', cor: '#60A5FA', desc: 'Tomadas, interruptores e mecanismos elétricos.' },
-  { nome: 'Pintura Paredes', cor: '#93C5FD', desc: 'Demolição, Extracoat, primário e acabamento.' },
-  { nome: 'Portas', cor: '#F59E0B', desc: 'Aros e portas interiores.' },
-  { nome: 'Móveis', cor: '#10B981', desc: 'Móveis, bancas e bancadas de cozinha.' },
-  { nome: 'Eletrodomésticos', cor: '#6366F1', desc: 'Instalação de todos os eletrodomésticos.' },
-  { nome: 'Chão/Rodapé', cor: '#EF4444', desc: 'Pavimento e rodapés.' },
-  { nome: 'WC Equipamentos', cor: '#8B5CF6', desc: 'Lavatório, sanita, chuveiro, duche e toalheiros.' },
-]
+import { BarChart3, CheckSquare, Building2, Kanban } from 'lucide-react'
 
 const ferramentas = [
   {
@@ -67,19 +53,6 @@ const ferramentas = [
       'O estado aqui e no Gantt estão sincronizados — mudar num sítio reflete no outro.',
     ],
     nota: 'Usa "Bloqueado" com critério — é a informação mais útil para identificar bottlenecks na obra.',
-  },
-  {
-    icon: TrendingUp,
-    cor: 'bg-foreground',
-    titulo: 'Line of Balance',
-    resumo: 'Ferramenta de planeamento baseada em fluxo contínuo (takt time). Defines as durações e o sistema calcula as datas automaticamente.',
-    comoUsar: [
-      'Define a duração de cada fase (em dias) e o takt time entre apartamentos.',
-      'Escolhe a data de início do primeiro AP.',
-      'O sistema gera o calendário ideal para todos os APs em sequência.',
-      'Podes importar as datas calculadas diretamente para o Gantt.',
-    ],
-    nota: 'O LoB é uma ferramenta de planeamento, não de controlo. Usa-o para simular cenários antes de comprometer datas no Gantt.',
   },
 ]
 
@@ -187,92 +160,6 @@ export default function GuiaPage() {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* 04 — Sequência construtiva */}
-      <section>
-        <SectionLabel n="04" titulo="Sequência construtiva" />
-        <p className="text-muted-foreground text-sm mb-5 leading-relaxed">
-          As 11 fases têm uma ordem imutável — cada uma só começa depois da anterior estar terminada.
-          Esta sequência define as dependências no Gantt e na Checklist.
-        </p>
-        <div className="space-y-1.5">
-          {fases.map((f, i) => (
-            <div key={f.nome} className="flex items-center gap-4 rounded-lg border px-4 py-3 hover:bg-muted/20 transition-colors">
-              <span className="font-mono text-xs text-muted-foreground/50 w-5 shrink-0 select-none">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <span className="w-3 h-3 rounded-sm shrink-0" style={{ backgroundColor: f.cor }} />
-              <span className="text-sm font-medium w-40 shrink-0">{f.nome}</span>
-              <span className="text-xs text-muted-foreground">{f.desc}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 05 — Estados */}
-      <section>
-        <SectionLabel n="05" titulo="Estados das tarefas" />
-        <p className="text-muted-foreground text-sm mb-5 leading-relaxed">
-          Cada fase de cada apartamento tem um estado. Mantê-los atualizados é o que torna o Kanban uma ferramenta útil.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            { dot: 'bg-slate-300', label: 'Por fazer', quando: 'A fase ainda não começou. É o estado inicial de todas as tarefas.' },
-            { dot: 'bg-brand-600', label: 'Em curso', quando: 'A equipa está ativamente a trabalhar nesta fase no terreno.' },
-            { dot: 'bg-destructive', label: 'Bloqueado', quando: 'Há um impedimento externo: material em falta, outra equipa a acabar, decisão pendente.' },
-            { dot: 'bg-brand-800', label: 'Concluído', quando: 'A fase terminou, a checklist foi verificada e o trabalho aceite.' },
-          ].map(s => (
-            <div key={s.label} className="rounded-lg border px-4 py-3.5 flex items-start gap-3">
-              <span className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${s.dot}`} />
-              <div>
-                <p className="text-sm font-semibold">{s.label}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{s.quando}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 06 — Permissões */}
-      <section>
-        <SectionLabel n="06" titulo="Quem pode fazer o quê" />
-        <div className="rounded-xl border overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/40">
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground w-1/2">Ação</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Admin</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Encarregado</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Operário</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {[
-                { acao: 'Ver dashboards e KPIs', admin: true, enc: true, op: true },
-                { acao: 'Marcar itens na checklist', admin: true, enc: true, op: true },
-                { acao: 'Editar datas no Gantt', admin: true, enc: true, op: false },
-                { acao: 'Mover cartões no Kanban', admin: true, enc: true, op: false },
-                { acao: 'Simular no Line of Balance', admin: true, enc: true, op: false },
-                { acao: 'Gerir utilizadores', admin: true, enc: false, op: false },
-                { acao: 'Ver auditoria de ações', admin: true, enc: false, op: false },
-              ].map(row => (
-                <tr key={row.acao} className="hover:bg-muted/20 transition-colors">
-                  <td className="px-5 py-3 text-muted-foreground">{row.acao}</td>
-                  <td className="px-4 py-3 text-center text-brand-600 dark:text-brand-400 font-medium">
-                    {row.admin ? '✓' : <span className="text-muted-foreground/30">—</span>}
-                  </td>
-                  <td className="px-4 py-3 text-center text-brand-600 dark:text-brand-400 font-medium">
-                    {row.enc ? '✓' : <span className="text-muted-foreground/30">—</span>}
-                  </td>
-                  <td className="px-4 py-3 text-center text-brand-600 dark:text-brand-400 font-medium">
-                    {row.op ? '✓' : <span className="text-muted-foreground/30">—</span>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </section>
 

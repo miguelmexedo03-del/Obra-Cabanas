@@ -104,15 +104,16 @@
   --chart-4: #A85A3F;
   --chart-5: #73746E;
 
-  /* Sidebar — always dark regardless of page theme, tied to the brand ramp instead of generic slate */
-  --sidebar: #12130F;
-  --sidebar-foreground: #B0B1AC;
-  --sidebar-primary: #98A26F;
+  /* Sidebar — always dark regardless of page theme, tied to the brand ramp instead of generic slate.
+     Lifted from near-black to a warm charcoal-olive so it reads as rich, not heavy. */
+  --sidebar: #21231B;
+  --sidebar-foreground: #C7C8BE;
+  --sidebar-primary: #A8B27E;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1B1D16;
-  --sidebar-accent-foreground: #F9F9F6;
-  --sidebar-border: oklch(1 0 0 / 0.08);
-  --sidebar-ring: #98A26F;
+  --sidebar-accent: #2F3226;
+  --sidebar-accent-foreground: #FAFAF7;
+  --sidebar-border: oklch(1 0 0 / 0.1);
+  --sidebar-ring: #A8B27E;
 }
 
 .dark {
@@ -139,14 +140,14 @@
   --chart-3: #7C9AB8;
   --chart-4: #C57C5F;
   --chart-5: #9C9E94;
-  --sidebar: #0E0F0B;
-  --sidebar-foreground: #B0B1AC;
-  --sidebar-primary: #98A26F;
+  --sidebar: #21231B;
+  --sidebar-foreground: #C7C8BE;
+  --sidebar-primary: #A8B27E;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #1B1D16;
-  --sidebar-accent-foreground: #F9F9F6;
-  --sidebar-border: oklch(1 0 0 / 0.08);
-  --sidebar-ring: #98A26F;
+  --sidebar-accent: #2F3226;
+  --sidebar-accent-foreground: #FAFAF7;
+  --sidebar-border: oklch(1 0 0 / 0.1);
+  --sidebar-ring: #A8B27E;
 }
 
 @layer base {
