@@ -41,13 +41,4 @@ describe('buildFacts', () => {
     const defeito = facts.pendentes.find(p => p.categoria === 'defeito')
     expect(defeito?.notas).toBe('reparar antes de pintar')
   })
-
-  it('sem observações passadas, fica um array vazio', () => {
-    expect(facts.observacoes).toEqual([])
-  })
-
-  it('passa observações fornecidas para os factos', () => {
-    const comObs = buildFacts('AP1', 39, rows, [{ divisao: 'Cozinha', elemento: 'Bancada', texto: 'falta selar' }])
-    expect(comObs.observacoes).toHaveLength(1)
-  })
 })

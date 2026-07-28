@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { classifyPintura } from '@/lib/relatorio/classify'
 import { categorizarItem } from '@/lib/relatorio/categorize'
-import type { Facts, PinturaFacto, PendenteItem, ObservacaoFacto } from '@/lib/relatorio/types'
+import type { Facts, PinturaFacto, PendenteItem } from '@/lib/relatorio/types'
 
 export interface RawRow {
   divisao: string
@@ -13,13 +13,8 @@ export interface RawRow {
 
 const FASES_PINTURA = new Set(['Pintura Teto', 'Pintura Paredes'])
 
-// Pura: transforma linhas de elementos pendentes nos factos que alimentam o relatório.
-export function buildFacts(
-  apartamento: string,
-  progressoPct: number,
-  rows: RawRow[],
-  observacoes: ObservacaoFacto[] = [],
-): Facts {
+// Pura: transforma linhas de elementos pendentes nos factos que o LLM recebe.
+export function buildFacts(apartamento: string, progressoPct: number, rows: RawRow[]): Facts {
   // 1) Pintura — agrupar demãos pendentes por (divisão, superfície) e classificar
   const coats = new Map<string, string[]>() // chave `${divisao}||${superficie}`
   for (const r of rows) {
@@ -52,7 +47,7 @@ export function buildFacts(
     })
   }
 
-  return { apartamento, progresso_pct: progressoPct, pintura, pendentes, observacoes }
+  return { apartamento, progresso_pct: progressoPct, pintura, pendentes }
 }
 
 // Tipo da linha devolvida por `elementos.select(...)` com as relações
@@ -68,18 +63,11 @@ type ElementoPendenteRow = {
   divisoes: { nome: string } | null
 }
 
-// Tipo da linha devolvida pela query de evidências com o elemento embutido
-// (mesmo padrão de ElementoPendenteRow acima).
-type EvidenciaComElementoRow = {
-  texto: string | null
-  elementos: { elemento: string; divisoes: { nome: string } | null } | null
-}
-
-// Query: lê progresso + itens pendentes + observações escritas do AP e devolve os factos.
+// Query: lê progresso + itens pendentes do AP e devolve os factos.
 export async function getFacts(apartamentoId: number): Promise<Facts> {
   const supabase = await createClient()
 
-  const [{ data: apRow }, { data: progRow }, { data: elementos }, { data: evidenciasRaw }] = await Promise.all([
+  const [{ data: apRow }, { data: progRow }, { data: elementos }] = await Promise.all([
     supabase.from('apartamentos').select('codigo').eq('id', apartamentoId).single(),
     supabase.from('progresso_por_apartamento').select('percentagem').eq('apartamento_id', apartamentoId).single(),
     supabase
@@ -87,11 +75,6 @@ export async function getFacts(apartamentoId: number): Promise<Facts> {
       .select('elemento, sub_elemento, notas, fases(nome), divisoes(nome)')
       .eq('apartamento_id', apartamentoId)
       .eq('concluido', false),
-    supabase
-      .from('item_evidencias')
-      .select('texto, elementos!inner(elemento, apartamento_id, divisoes(nome))')
-      .eq('elementos.apartamento_id', apartamentoId)
-      .not('texto', 'is', null),
   ])
 
   const codigo = apRow?.codigo ?? `AP${apartamentoId}`
@@ -105,14 +88,5 @@ export async function getFacts(apartamentoId: number): Promise<Facts> {
     notas: e.notas,
   }))
 
-  // Só observações com texto escrito — fotos sem palavras não entram no relatório.
-  const observacoes: ObservacaoFacto[] = ((evidenciasRaw ?? []) as unknown as EvidenciaComElementoRow[])
-    .filter((ev): ev is EvidenciaComElementoRow & { texto: string } => !!ev.texto?.trim())
-    .map((ev) => ({
-      divisao: ev.elementos?.divisoes?.nome ?? 'Sem divisão',
-      elemento: ev.elementos?.elemento ?? '',
-      texto: ev.texto.trim(),
-    }))
-
-  return buildFacts(codigo, progressoPct, rows, observacoes)
+  return buildFacts(codigo, progressoPct, rows)
 }

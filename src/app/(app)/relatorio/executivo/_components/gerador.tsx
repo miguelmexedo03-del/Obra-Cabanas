@@ -1,14 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy } from 'lucide-react'
+import { Copy, TriangleAlert } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { gerarRelatorioAction } from '@/app/actions/relatorio'
-import { RelatorioTexto } from '@/components/relatorio/relatorio-texto'
 import type { RelatorioResult } from '@/lib/relatorio/types'
 
 interface Apartamento {
@@ -60,9 +59,8 @@ export function Gerador({ apartamentos }: Props) {
       if (r.success) acc.push(r.data)
       else acc.push({ apartamento: a.codigo, texto: `(erro: ${r.error})`, origem: 'template' })
       setLote([...acc])
-      // Alguns APs acionam o LLM (reescrita de notas/observações) — espaçar
-      // as chamadas para não esbarrar no limite do free tier do Gemini.
-      if (i < apartamentos.length - 1) await delay(1500)
+      // Espaçamento para respeitar 15 pedidos/min do Gemini free tier (spec §8)
+      if (i < apartamentos.length - 1) await delay(4000)
     }
     setProgresso(null)
     setLoading(false)
@@ -113,9 +111,15 @@ export function Gerador({ apartamentos }: Props) {
       {progresso && <p className="text-sm text-muted-foreground">{progresso}</p>}
 
       {resultado && (
-        <div className="rounded-lg border border-border bg-card p-4">
-          <RelatorioTexto texto={resultado.texto} />
-          <Button variant="outline" size="sm" onClick={copiar} className="mt-3">
+        <div className="rounded-lg border bg-card p-4 space-y-3">
+          {resultado.origem === 'template' && (
+            <p className="flex items-center gap-1.5 text-xs text-amber-600">
+              <TriangleAlert className="h-3.5 w-3.5" />
+              Gerado por template (LLM indisponível).
+            </p>
+          )}
+          <p className="whitespace-pre-wrap leading-relaxed">{resultado.texto}</p>
+          <Button variant="outline" size="sm" onClick={copiar}>
             <Copy className="h-4 w-4" />
             Copiar
           </Button>
@@ -129,8 +133,15 @@ export function Gerador({ apartamentos }: Props) {
             Copiar tudo
           </Button>
           {lote.map((r) => (
-            <div key={r.apartamento} className="rounded-lg border border-border bg-card p-4">
-              <RelatorioTexto texto={r.texto} />
+            <div key={r.apartamento} className="rounded-lg border bg-card p-4 space-y-3">
+              {r.origem === 'template' && (
+                <p className="flex items-center gap-1.5 text-xs text-amber-600">
+                  <TriangleAlert className="h-3.5 w-3.5" />
+                  Gerado por template (LLM indisponível).
+                </p>
+              )}
+              <p className="text-sm font-medium">{r.apartamento}</p>
+              <p className="whitespace-pre-wrap leading-relaxed">{r.texto}</p>
             </div>
           ))}
         </div>

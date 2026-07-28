@@ -1,19 +1,12 @@
-# Relatório Executivo — geração determinística
+# Relatório Executivo — setup do LLM
 
-**Decisão de 2026-07-28:** o relatório deixou de usar LLM (Gemini). O
-formato variava de relatório para relatório (o LLM não garantia
-consistência) e o free tier do Gemini estava a dar timeout com
-frequência. `lib/relatorio/gerar.ts` gera agora o texto sempre pela
-mesma estrutura determinística (`lib/relatorio/template.ts`): secções
-fixas por tópico (pintura, chão e rodapé, portas e aros, móveis,
-pladur e pedra, equipamentos de WC, eletrodomésticos, ar condicionado,
-bomba de calor, "a registar", observações), com bullet points por
-divisão. Só o conteúdo muda entre apartamentos — nunca a estrutura.
+1. Criar chave grátis: https://aistudio.google.com/apikey (conta Google, sem cartão).
+2. Variáveis de ambiente (Vercel → Project → Settings → Environment Variables, e `.env.local` em dev):
+   - `LLM_PROVIDER=gemini`
+   - `LLM_API_KEY=<a-tua-chave>`
+   - `LLM_MODEL=gemini-flash-lite-latest`  ← alias que aponta sempre para a flash-lite atual; **não usar `gemini-2.5-flash-lite`** (a Google já não o dá a contas novas → 404).
+   - Depois de adicionar/alterar env vars no Vercel, fazer **Redeploy** (só entram num deploy novo).
+3. Sem chave/quota, a app cai automaticamente no template determinístico (parágrafo mais simples). Nunca fica partida.
+4. Trocar de fornecedor (se a Google cortar o free tier): mudar `LLM_PROVIDER`/`LLM_API_KEY` no Vercel. Zero código.
 
-As observações escritas nos itens da checklist (feature "evidências")
-entram no relatório; evidências só com fotos, sem texto, são ignoradas.
-
-A página `/relatorio/executivo/config` (instruções avançadas para o
-LLM) foi removida — deixou de fazer sentido sem LLM. `lib/llm/` e as
-env vars `LLM_PROVIDER`/`LLM_API_KEY`/`LLM_MODEL` no Vercel ficaram
-órfãs (podem ser removidas do Vercel, não são lidas por código nenhum).
+**Privacidade:** o texto dos itens por fazer (elemento, sub-elemento, notas) é enviado para a API do Google. É estado de obra, sem dados pessoais sensíveis. Evitar pôr nomes/dados de pessoas no campo `notas`.

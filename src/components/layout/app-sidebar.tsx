@@ -1,7 +1,7 @@
 'use client'
 import {
   LayoutDashboard, Building2, ListChecks, GanttChartSquare,
-  KanbanSquare, Users, FileClock, User, BookOpen, PlusSquare, Search, FileText, Package, LucideIcon,
+  KanbanSquare, Users, FileClock, User, BookOpen, PlusSquare, Search, FileText, Settings, Package, LucideIcon,
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -34,6 +34,7 @@ const NAV: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] 
 const ADMIN_NAV: { href: string; label: string; icon: LucideIcon; exact?: boolean }[] = [
   { href: '/admin/users', label: 'Utilizadores', icon: Users },
   { href: '/admin/audit', label: 'Auditoria', icon: FileClock },
+  { href: '/relatorio/executivo/config', label: 'Instruções do relatório', icon: Settings },
 ]
 
 export function AppSidebar({ userName, userEmail, role }: AppSidebarProps) {

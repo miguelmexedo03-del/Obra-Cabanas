@@ -1,8 +1,6 @@
 import type { LLMProvider, FetchImpl } from '@/lib/llm/provider'
 
 // Chama a API Gemini via REST (sem SDK). system+user via um único prompt.
-// Usado só para reescrever notas curtas (defeitos/observações) — não para
-// gerar a estrutura do relatório, que é sempre determinística.
 export class GeminiProvider implements LLMProvider {
   constructor(
     private apiKey: string,
@@ -15,13 +13,13 @@ export class GeminiProvider implements LLMProvider {
     const body = {
       systemInstruction: { parts: [{ text: system }] },
       contents: [{ role: 'user', parts: [{ text: user }] }],
-      generationConfig: { temperature: 0.3 },
+      generationConfig: { temperature: 0.4 },
     }
     const res = await this.fetchImpl(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(20_000),
+      signal: AbortSignal.timeout(55_000),
     })
     if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`)
     const json = (await res.json()) as {
