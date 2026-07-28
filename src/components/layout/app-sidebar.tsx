@@ -4,6 +4,7 @@ import {
   KanbanSquare, BarChart3, Users, FileClock, User, BookOpen, PlusSquare, Search, FileText, Settings, Package, LucideIcon,
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { NavItem } from './nav-item'
 import { logout } from '@/app/actions/auth'
 import {
@@ -41,14 +42,17 @@ export function AppSidebar({ userName, userEmail, role }: AppSidebarProps) {
   const isAdmin = role === 'admin'
 
   return (
-    <aside className="w-60 shrink-0 border-r border-slate-800 bg-slate-900 flex flex-col h-screen sticky top-0">
+    <aside className="w-60 shrink-0 border-r border-sidebar-border bg-sidebar flex flex-col h-screen sticky top-0">
       {/* Brand */}
-      <div className="px-4 h-14 flex items-center border-b border-slate-800">
+      <div className="px-4 h-14 flex items-center border-b border-sidebar-border">
         <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded bg-emerald-500 flex items-center justify-center shrink-0">
-            <span className="text-white text-xs font-bold leading-none">OC</span>
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white p-1">
+            <Image src="/logo-tar.png" alt="tar" width={28} height={28} className="h-full w-full object-contain" priority />
           </div>
-          <span className="font-semibold text-sm text-slate-100 tracking-tight">Obra Cabanas</span>
+          <div className="flex flex-col leading-none">
+            <span className="text-sm font-semibold tracking-tight text-sidebar-accent-foreground">tar</span>
+            <span className="text-[10px] tracking-wide text-sidebar-foreground/70">Obra Cabanas</span>
+          </div>
         </div>
       </div>
 
@@ -58,7 +62,7 @@ export function AppSidebar({ userName, userEmail, role }: AppSidebarProps) {
 
         {isAdmin && (
           <>
-            <div className="px-3 pt-4 pb-1 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.12em]">
+            <div className="px-3 pt-4 pb-1 text-[10px] font-semibold text-sidebar-foreground/50 uppercase tracking-[0.12em]">
               Admin
             </div>
             {ADMIN_NAV.map(item => <NavItem key={item.href} {...item} />)}
@@ -67,19 +71,19 @@ export function AppSidebar({ userName, userEmail, role }: AppSidebarProps) {
       </nav>
 
       {/* User */}
-      <div className="border-t border-slate-800 p-2">
+      <div className="border-t border-sidebar-border p-2">
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-slate-800 text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors hover:bg-sidebar-accent text-left"
           >
-            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center shrink-0">
-              <span className="text-xs font-semibold text-slate-200">
+            <div className="w-7 h-7 rounded-full bg-sidebar-accent flex items-center justify-center shrink-0 text-sidebar-accent-foreground ring-1 ring-sidebar-border">
+              <span className="text-xs font-semibold">
                 {userName.charAt(0).toUpperCase()}
               </span>
             </div>
             <div className="flex flex-col items-start min-w-0 flex-1">
-              <span className="text-sm font-medium text-slate-200 truncate w-full">{userName}</span>
-              <span className="text-[11px] text-slate-500 capitalize">{role}</span>
+              <span className="text-sm font-medium text-sidebar-accent-foreground truncate w-full">{userName}</span>
+              <span className="text-[11px] text-sidebar-foreground/60 capitalize">{role}</span>
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" side="top" className="w-56">

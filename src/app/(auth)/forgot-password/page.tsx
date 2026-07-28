@@ -12,7 +12,7 @@ export default function ForgotPasswordPage() {
 
   if (state?.success) {
     return (
-      <div className="rounded-lg border bg-card p-8 shadow-sm text-center">
+      <div className="rounded-xl border border-border bg-card p-8 shadow-[var(--shadow-float)] text-center">
         <h1 className="text-xl font-semibold mb-2">Email enviado</h1>
         <p className="text-sm text-muted-foreground mb-6">
           Se o email existir na nossa base de dados, receberás um link para repor a password nos próximos minutos.
@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="rounded-lg border bg-card p-8 shadow-sm">
+    <div className="rounded-xl border border-border bg-card p-8 shadow-[var(--shadow-float)]">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Repor password</h1>
         <p className="text-sm text-muted-foreground mt-1">
