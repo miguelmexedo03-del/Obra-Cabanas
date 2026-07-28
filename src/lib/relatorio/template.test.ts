@@ -56,10 +56,8 @@ describe('renderTemplate', () => {
     expect(txt.toLowerCase()).toContain('sanita')
     expect(txt.toLowerCase()).toContain('lavatório')
   })
-  it('inclui observações escritas, com a divisão e o elemento', () => {
-    expect(txt).toContain('Observações:')
-    expect(txt).toContain('na Cozinha (Bancada)')
-    expect(txt).toContain('falta selar o encontro com a parede')
+  it('inclui observações escritas como frase própria, com a divisão e o elemento', () => {
+    expect(txt).toContain('Observações: Na Cozinha — Bancada: Falta selar o encontro com a parede.')
   })
   it('omite as observações quando não há nenhuma', () => {
     const semObs = renderTemplate({ ...facts, observacoes: [] })

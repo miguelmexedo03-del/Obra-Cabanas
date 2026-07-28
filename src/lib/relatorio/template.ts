@@ -16,6 +16,13 @@ function capitalizar(s: string): string {
   return /[.!?]$/.test(semPonto) ? semPonto : `${semPonto}.`
 }
 
+// Só maiúscula a primeira letra, sem forçar pontuação final — para frases
+// que ainda vão continuar (ex.: antes de " — elemento: ...").
+function comMaiuscula(s: string): string {
+  const t = s.trim()
+  return t ? t.charAt(0).toUpperCase() + t.slice(1) : t
+}
+
 // Junta uma lista em prosa natural em português: "A, B e C".
 function listaNatural(itens: string[]): string {
   if (itens.length === 0) return ''
@@ -240,11 +247,14 @@ export function renderTemplate(facts: Facts): string {
   if (defeitos.length) frases.push(`A registar: ${fraseLocais(defeitos)}.`)
 
   if (facts.observacoes.length > 0) {
+    // Cada observação é a sua própria frase (local — elemento: texto.), não um
+    // item de lista separado por vírgulas — lê-se mal quando há várias.
     const obs = facts.observacoes.map(o => {
-      const local = o.elemento ? `${comPreposicao(o.divisao)} (${o.elemento})` : comPreposicao(o.divisao)
-      return `${local}, ${o.texto.trim().replace(/\.$/, '')}`
+      const local = comMaiuscula(comPreposicao(o.divisao))
+      const contexto = o.elemento ? ` — ${o.elemento}` : ''
+      return `${local}${contexto}: ${capitalizar(o.texto)}`
     })
-    frases.push(capitalizar(`observações: ${obs.join('; ')}`))
+    frases.push(`Observações: ${obs.join(' ')}`)
   }
 
   return frases.join('\n\n')
