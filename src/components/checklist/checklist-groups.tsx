@@ -28,6 +28,7 @@ export type ChecklistGroupData = {
 interface Props {
   initialGroups: ChecklistGroupData[]
   apartamentoId: number
+  evidenciasCountMap?: Record<number, number>
 }
 
 type OptimisticAction = {
@@ -35,7 +36,7 @@ type OptimisticAction = {
   item: ChecklistGroupItem
 }
 
-export function ChecklistGroups({ initialGroups, apartamentoId }: Props) {
+export function ChecklistGroups({ initialGroups, apartamentoId, evidenciasCountMap = {} }: Props) {
   const router = useRouter()
   const [, startTransition] = useTransition()
 
@@ -95,6 +96,7 @@ export function ChecklistGroups({ initialGroups, apartamentoId }: Props) {
                 sub_elemento={el.sub_elemento}
                 concluido={el.concluido}
                 faseColor={group.faseColor}
+                evidenciasCount={evidenciasCountMap[el.id] ?? 0}
               />
             ))}
           </div>

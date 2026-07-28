@@ -140,6 +140,18 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
   }).sort((a, b) => divisaoSortPriority(a.nome) - divisaoSortPriority(b.nome))
   const pct = (progresso?.percentagem ?? 0) * 100
 
+  const elementoIds = (elementos ?? []).map(e => e.id)
+  const evidenciasCountMap: Record<number, number> = {}
+  if (elementoIds.length > 0) {
+    const { data: evsData } = await supabase
+      .from('item_evidencias')
+      .select('elemento_id')
+      .in('elemento_id', elementoIds)
+    for (const ev of evsData ?? []) {
+      evidenciasCountMap[ev.elemento_id] = (evidenciasCountMap[ev.elemento_id] ?? 0) + 1
+    }
+  }
+
   return (
     <div>
       {/* Back link */}
@@ -193,7 +205,7 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
       {groups.length === 0 ? (
         <EmptyState icon={ListChecks} title="Nenhum item encontrado" description="Ajusta os filtros para ver resultados." />
       ) : (
-        <ChecklistGroups initialGroups={groups} apartamentoId={apId} />
+        <ChecklistGroups initialGroups={groups} apartamentoId={apId} evidenciasCountMap={evidenciasCountMap} />
       )}
     </div>
   )

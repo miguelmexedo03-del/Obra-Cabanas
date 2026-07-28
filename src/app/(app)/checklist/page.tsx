@@ -116,6 +116,18 @@ async function ChecklistContent({ searchParams }: Props) {
     return divisaoSortPriority(a.divisaoNome) - divisaoSortPriority(b.divisaoNome)
   })
 
+  const elementoIds = elementos.map(e => e.id)
+  const evidenciasCountMap: Record<number, number> = {}
+  if (elementoIds.length > 0) {
+    const { data: evsData } = await supabase
+      .from('item_evidencias')
+      .select('elemento_id')
+      .in('elemento_id', elementoIds)
+    for (const ev of evsData ?? []) {
+      evidenciasCountMap[ev.elemento_id] = (evidenciasCountMap[ev.elemento_id] ?? 0) + 1
+    }
+  }
+
   return (
     <div className="space-y-3">
       <p className="text-xs tabular-nums text-muted-foreground">
@@ -145,6 +157,7 @@ async function ChecklistContent({ searchParams }: Props) {
                 sub_elemento={el.sub_elemento}
                 concluido={el.concluido}
                 faseColor={group.faseColor}
+                evidenciasCount={evidenciasCountMap[el.id] ?? 0}
               />
             ))}
           </div>

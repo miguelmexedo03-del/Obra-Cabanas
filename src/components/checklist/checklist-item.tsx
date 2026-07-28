@@ -1,8 +1,10 @@
 'use client'
 
-import { useOptimistic, useTransition } from 'react'
+import { useOptimistic, useState, useTransition } from 'react'
+import { Camera, Plus } from 'lucide-react'
 import { toggleElemento } from '@/app/actions/checklist'
 import { toast } from 'sonner'
+import { EvidenciasDialog } from './evidencias-dialog'
 
 interface Props {
   id: number
@@ -10,11 +12,14 @@ interface Props {
   sub_elemento: string | null
   concluido: boolean
   faseColor: string
+  evidenciasCount?: number
 }
 
-export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor }: Props) {
+export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor, evidenciasCount = 0 }: Props) {
   const [optimistic, setOptimistic] = useOptimistic(concluido)
   const [isPending, startTransition] = useTransition()
+  const [openEvidencias, setOpenEvidencias] = useState(false)
+  const [count, setCount] = useState(evidenciasCount)
 
   function handleChange() {
     const next = !optimistic
@@ -26,6 +31,12 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
         toast.error('Não foi possível atualizar', { description: result.error })
       }
     })
+  }
+
+  function handleEvidenciasClick(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    setOpenEvidencias(true)
   }
 
   return (
@@ -77,6 +88,29 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
           </p>
         )}
       </div>
+
+      <button
+        type="button"
+        onClick={handleEvidenciasClick}
+        aria-label="Ver evidências (fotos e observações)"
+        className="mt-0.5 flex h-6 min-w-[32px] shrink-0 items-center justify-center gap-1 rounded-md px-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        {count > 0 ? (
+          <>
+            <Camera className="h-3.5 w-3.5" />
+            {count}
+          </>
+        ) : (
+          <Plus className="h-3.5 w-3.5 text-muted-foreground/50" />
+        )}
+      </button>
+
+      <EvidenciasDialog
+        elementoId={id}
+        open={openEvidencias}
+        onOpenChange={setOpenEvidencias}
+        onCountChange={setCount}
+      />
     </label>
   )
 }
