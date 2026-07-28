@@ -6,22 +6,18 @@ const ORDEM_CATEGORIAS = [
   'ar condicionado', 'bomba de calor', 'defeito', 'outros',
 ]
 
-function frasePintura(pintura: PinturaFacto[]): string {
-  if (pintura.length === 0) return ''
-  const completa = pintura.filter(p => p.estado === 'pintura').map(p => `${p.divisao} (${p.superficie})`)
-  const ultima = pintura.filter(p => p.estado === 'ultima_demao').map(p => `${p.divisao} (${p.superficie})`)
-  const partes: string[] = []
-  if (completa.length) partes.push(`falta pintura em ${completa.join(', ')}`)
-  if (ultima.length) partes.push(`falta a última demão em ${ultima.join(', ')}`)
-  return partes.join('; ')
-}
-
-// Fallback determinístico. Sem LLM: agrupa por categoria e enumera divisões.
+// Fallback determinístico. Sem LLM: organiza por tópicos (pintura, depois cada
+// categoria pendente) com bullet points por divisão, em vez de prosa corrida.
 export function renderTemplate(facts: Facts): string {
-  const frases: string[] = [`${facts.apartamento} — ${facts.progresso_pct}% concluído.`]
+  const linhas: string[] = [`${facts.apartamento} — ${facts.progresso_pct}% concluído.`]
 
-  const p = frasePintura(facts.pintura)
-  if (p) frases.push(p.charAt(0).toUpperCase() + p.slice(1) + '.')
+  const pinturaCompleta = facts.pintura.filter(p => p.estado === 'pintura').map(p => `${p.divisao} (${p.superficie})`)
+  const ultimaDemao = facts.pintura.filter(p => p.estado === 'ultima_demao').map(p => `${p.divisao} (${p.superficie})`)
+  if (pinturaCompleta.length || ultimaDemao.length) {
+    linhas.push('', 'Pintura:')
+    for (const d of pinturaCompleta) linhas.push(`- Falta pintura em ${d}.`)
+    for (const d of ultimaDemao) linhas.push(`- Falta a última demão em ${d}.`)
+  }
 
   const porCategoria = new Map<string, string[]>()
   for (const item of facts.pendentes) {
@@ -37,8 +33,9 @@ export function renderTemplate(facts: Facts): string {
   for (const cat of ordenadas) {
     const divs = porCategoria.get(cat)!
     const label = cat === 'defeito' ? 'A registar' : cat.charAt(0).toUpperCase() + cat.slice(1)
-    frases.push(`${label}: ${divs.join(', ')}.`)
+    linhas.push('', `${label}:`)
+    for (const d of divs) linhas.push(`- ${d}`)
   }
 
-  return frases.join(' ')
+  return linhas.join('\n')
 }

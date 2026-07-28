@@ -15,7 +15,8 @@ export async function gerarDeFactos(
     const texto = await provider.generate(system, user)
     if (!texto.trim()) throw new Error('LLM devolveu vazio')
     return { apartamento: facts.apartamento, texto, origem: 'llm' }
-  } catch {
+  } catch (e) {
+    console.error('[relatorio] LLM falhou, a usar template:', e instanceof Error ? e.message : e)
     return { apartamento: facts.apartamento, texto: renderTemplate(facts), origem: 'template' }
   }
 }
