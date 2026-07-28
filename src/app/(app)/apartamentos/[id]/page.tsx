@@ -128,7 +128,7 @@ export default async function ApartamentoPage({ params, searchParams }: Props) {
     const unfiltered = (allElementos ?? []).filter(el => el.divisao_id === g.id)
     const defaultFaseId = getDefaultFaseId(unfiltered.length > 0 ? unfiltered : sorted)
     // Fix #2: derive faseColor from the majority fase, not from the first item in DB order
-    const faseColor = fases?.find(f => f.id === defaultFaseId)?.cor_hex ?? '#94a3b8'
+    const faseColor = fases?.find(f => f.id === defaultFaseId)?.cor_hex ?? '#73746E'
     return {
       id: g.id,
       nome: g.nome,

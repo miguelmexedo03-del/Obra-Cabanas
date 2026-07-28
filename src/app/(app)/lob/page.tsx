@@ -36,7 +36,7 @@ export default async function LobPage() {
     .map(t => ({
       fase_id: t.fase_id!,
       fase_nome: faseMap.get(t.fase_id!)?.nome ?? '',
-      fase_cor: faseMap.get(t.fase_id!)?.cor_hex ?? '#94a3b8',
+      fase_cor: faseMap.get(t.fase_id!)?.cor_hex ?? '#73746E',
       ap: t.apartamento_id!,
       inicio: t.inicio!,
       fim: t.fim!,

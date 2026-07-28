@@ -22,7 +22,7 @@ export default async function KanbanPage() {
       id: r.id!,
       apartamento_codigo: r.apartamento_codigo!,
       fase_nome: r.fase_nome!,
-      fase_cor: r.fase_cor ?? '#94a3b8',
+      fase_cor: r.fase_cor ?? '#73746E',
       inicio: r.inicio ?? null,
       fim: r.fim ?? null,
       status: r.status ?? 'por_fazer',
