@@ -10,7 +10,7 @@ export default function ResetPasswordPage() {
   const [state, action, pending] = useActionState(resetPassword, null)
 
   return (
-    <div className="rounded-lg border bg-card p-8 shadow-sm">
+    <div className="rounded-xl border border-border bg-card p-8 shadow-[var(--shadow-float)]">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Nova password</h1>
         <p className="text-sm text-muted-foreground mt-1">Escolhe uma nova password para a tua conta.</p>

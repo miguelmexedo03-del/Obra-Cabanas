@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { signup } from '@/app/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,8 +12,11 @@ export default function SignupPage() {
   const [state, action, pending] = useActionState(signup, null)
 
   return (
-    <div className="rounded-lg border bg-card p-8 shadow-sm">
-      <div className="mb-6">
+    <div className="rounded-xl border border-border bg-card p-8 shadow-[var(--shadow-float)]">
+      <div className="mb-6 flex flex-col items-center text-center">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-white ring-1 ring-border">
+          <Image src="/logo-tar.png" alt="tar" width={40} height={40} className="h-full w-full object-contain p-1" />
+        </div>
         <h1 className="text-2xl font-semibold tracking-tight">Obra Cabanas</h1>
         <p className="text-sm text-muted-foreground mt-1">Cria a tua conta</p>
       </div>

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Outfit, IBM_Plex_Mono } from "next/font/google";
+import { Inter, IBM_Plex_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin", "latin-ext"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const ibmPlexMono = IBM_Plex_Mono({
@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt"
-      className={`${outfit.variable} ${ibmPlexMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${ibmPlexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}

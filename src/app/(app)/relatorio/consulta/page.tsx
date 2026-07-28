@@ -74,7 +74,7 @@ async function ConsultaResultado({ searchParams }: Props) {
               <td className="px-4 py-2.5">{l.divisaoNome}</td>
               <td className="px-4 py-2.5">{l.concluidos}/{l.total}</td>
               <td className="px-4 py-2.5">
-                <span className={l.estado === 'Completo' ? 'text-green-700' : 'text-amber-700'}>
+                <span className={l.estado === 'Completo' ? 'text-brand-700' : 'text-amber-700'}>
                   {l.estado}
                 </span>
               </td>

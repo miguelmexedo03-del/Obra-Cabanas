@@ -21,9 +21,9 @@ const ACTION_LABEL: Record<string, string> = {
 }
 
 const ACTION_COLOR: Record<string, string> = {
-  insert: 'text-green-600 bg-green-50',
-  update: 'text-blue-600 bg-blue-50',
-  delete: 'text-red-600 bg-red-50',
+  insert: 'text-brand-600 bg-brand-50 dark:bg-brand-900/30',
+  update: 'text-muted-foreground bg-muted',
+  delete: 'text-destructive bg-destructive/10',
 }
 
 const TABLE_LABEL: Record<string, string> = {

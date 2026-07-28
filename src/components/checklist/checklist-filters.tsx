@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 import { TIPOS_DIVISAO } from '@/lib/utils'
 
 const ALL = '__all__'
@@ -75,7 +75,7 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
   const hasFilters = searchParams.size > 0
 
   return (
-    <div className="flex flex-wrap gap-2 items-center">
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-2.5 ring-1 ring-foreground/5">
       {showApFilter && (
         <Select
           value={searchParams.get('ap') ?? undefined}
@@ -178,13 +178,16 @@ export function ChecklistFilters({ apartamentos, fases, divisoes, showApFilter =
         </SelectContent>
       </Select>
 
-      <Input
-        placeholder="Pesquisar (ex: porta)"
-        value={searchValue}
-        onChange={e => handleSearch(e.target.value)}
-        className="w-full sm:w-[200px]"
-        aria-label="Pesquisar elementos"
-      />
+      <div className="relative w-full sm:w-[220px]">
+        <Search className="pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          placeholder="Pesquisar (ex: porta)"
+          value={searchValue}
+          onChange={e => handleSearch(e.target.value)}
+          className="pl-8"
+          aria-label="Pesquisar elementos"
+        />
+      </div>
 
       {(hasFilters || searchValue) && (
         <Button

@@ -97,7 +97,7 @@ async function ChecklistContent({ searchParams }: Props) {
   for (const el of elementos) {
     const apCodigo = el.apartamentos?.codigo ?? `AP${el.apartamento_id}`
     const divisaoNome = el.divisoes?.nome ?? '—'
-    const faseColor = el.fases?.cor_hex ?? '#888888'
+    const faseColor = el.fases?.cor_hex ?? '#73746E'
     const key = `${el.apartamento_id}__${el.divisao_id ?? 'null'}`
 
     if (!groupMap.has(key)) {
@@ -118,25 +118,25 @@ async function ChecklistContent({ searchParams }: Props) {
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs tabular-nums text-muted-foreground">
         {elementos.length} itens {(elementosRaw?.length ?? 0) === 500 ? '(limite 500 — aplica filtros para ver mais)' : ''}
       </p>
       {groups.map((group, i) => (
-        <div key={i} className="rounded-lg border overflow-hidden">
-          <div className="bg-muted/40 px-4 py-2.5 flex items-center gap-2 border-b">
+        <div key={i} className="overflow-hidden rounded-xl border border-border bg-card ring-1 ring-foreground/5">
+          <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5">
             <span
-              className="w-2.5 h-2.5 rounded-full shrink-0"
+              className="h-2.5 w-2.5 shrink-0 rounded-full"
               style={{ backgroundColor: group.faseColor }}
               aria-hidden="true"
             />
             <span className="text-xs font-medium text-muted-foreground">{group.apCodigo}</span>
             <span className="text-xs text-muted-foreground" aria-hidden="true">›</span>
-            <span className="text-sm font-medium flex-1 truncate">{group.divisaoNome}</span>
-            <span className="text-xs text-muted-foreground shrink-0">
+            <span className="flex-1 truncate text-sm font-medium text-foreground">{group.divisaoNome}</span>
+            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
               {group.concluidos}/{group.items.length}
             </span>
           </div>
-          <div className="divide-y">
+          <div className="divide-y divide-border">
             {group.items.map(el => (
               <ChecklistItem
                 key={el.id}

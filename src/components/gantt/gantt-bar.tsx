@@ -65,7 +65,7 @@ export function GanttBar({
       <div
         className={cn(
           'absolute inset-y-1 rounded select-none flex items-center px-2 text-xs font-medium text-white overflow-hidden',
-          isOverdue && 'ring-2 ring-red-500 ring-inset',
+          isOverdue && 'ring-2 ring-destructive ring-inset',
           canEdit ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
         )}
         style={{ left, width, backgroundColor: corHex }}

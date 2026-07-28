@@ -31,7 +31,7 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
   return (
     <label
       className={`flex items-start gap-3 px-4 py-3 min-h-[44px] cursor-pointer
-        rounded-md transition-colors hover:bg-muted/40 active:bg-muted/60
+        transition-colors hover:bg-muted/40 active:bg-muted/60
         ${isPending ? 'opacity-60' : ''}`}
     >
       <div className="relative mt-0.5 flex-shrink-0">
@@ -43,7 +43,7 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
           aria-label={sub_elemento ? `${elemento} — ${sub_elemento}` : elemento}
         />
         <div
-          className={`w-5 h-5 rounded border-2 flex items-center justify-center
+          className={`w-5 h-5 rounded-[5px] border-2 flex items-center justify-center
             transition-all duration-150
             ${optimistic ? 'border-transparent' : 'border-input bg-background'}`}
           style={optimistic ? { backgroundColor: faseColor } : {}}

@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { login } from '@/app/actions/auth'
@@ -16,14 +17,17 @@ function LoginForm() {
   const msg = searchParams.get('msg')
 
   return (
-    <div className="rounded-lg border bg-card p-8 shadow-sm">
-      <div className="mb-6">
+    <div className="rounded-xl border border-border bg-card p-8 shadow-[var(--shadow-float)]">
+      <div className="mb-6 flex flex-col items-center text-center">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-white ring-1 ring-border">
+          <Image src="/logo-tar.png" alt="tar" width={40} height={40} className="h-full w-full object-contain p-1" />
+        </div>
         <h1 className="text-2xl font-semibold tracking-tight">Obra Cabanas</h1>
         <p className="text-sm text-muted-foreground mt-1">Entra na tua conta</p>
       </div>
 
       {msg === 'confirma-email' && (
-        <div className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+        <div className="mb-4 rounded-md border border-brand-200 bg-brand-50 px-4 py-3 text-sm text-brand-800">
           Conta criada! Confirma o teu email antes de entrar.
         </div>
       )}

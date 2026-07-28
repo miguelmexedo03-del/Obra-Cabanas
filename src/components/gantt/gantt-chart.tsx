@@ -79,7 +79,7 @@ export function GanttChart({
   const totalWidth = NAME_COL_WIDTH + differenceInDays(viewEnd, viewStart) * PX_PER_DAY + COL_WIDTH
 
   return (
-    <div ref={scrollRef} className="border border-slate-200 rounded-lg overflow-auto max-h-[80vh] bg-white">
+    <div ref={scrollRef} className="border border-border rounded-lg overflow-auto max-h-[80vh] bg-card">
       <div className="relative" style={{ minWidth: totalWidth }}>
       <GanttHeader
         viewStart={viewStart}
@@ -87,9 +87,9 @@ export function GanttChart({
         nameColWidth={NAME_COL_WIDTH}
       />
 
-      {/* Linha verde de hoje */}
+      {/* Linha de hoje */}
       <div
-        className="absolute top-0 bottom-0 w-0.5 bg-emerald-500/90 pointer-events-none z-20"
+        className="absolute top-0 bottom-0 w-0.5 bg-brand-600/90 pointer-events-none z-20"
         style={{ left: todayLeft }}
         aria-label="Hoje"
       />
