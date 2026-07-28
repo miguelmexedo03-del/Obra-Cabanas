@@ -34,17 +34,17 @@ describe('renderTemplate', () => {
   it('nunca fica vazio', () => {
     expect(txt.length).toBeGreaterThan(20)
   })
-  it('usa bullet points por secção', () => {
-    expect(txt).toContain('Eletrodomésticos:')
-    expect(txt).toMatch(/^- Cozinha$/m)
+  it('escreve em prosa, um parágrafo por secção, sem bullets', () => {
+    expect(txt).toContain('Eletrodomésticos: falta em Cozinha.')
+    expect(txt).not.toContain('- ')
   })
   it('inclui observações escritas, com a divisão e o elemento', () => {
-    expect(txt).toContain('Observações:')
+    expect(txt).toContain('Observações —')
     expect(txt).toContain('Cozinha (Bancada)')
-    expect(txt).toContain('falta selar o encontro com a parede'.charAt(0).toUpperCase() + 'alta selar o encontro com a parede')
+    expect(txt).toContain('Falta selar o encontro com a parede')
   })
-  it('omite a secção de observações quando não há nenhuma', () => {
+  it('omite o parágrafo de observações quando não há nenhuma', () => {
     const semObs = renderTemplate({ ...facts, observacoes: [] })
-    expect(semObs).not.toContain('Observações:')
+    expect(semObs).not.toContain('Observações —')
   })
 })

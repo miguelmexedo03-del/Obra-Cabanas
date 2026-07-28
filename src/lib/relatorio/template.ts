@@ -1,7 +1,7 @@
 import type { Facts, PinturaFacto } from '@/lib/relatorio/types'
 
 // Ordem fixa das secções (spec §5 regra 6) — nunca varia entre relatórios.
-// Om itir uma categoria sem itens é a única coisa que muda de relatório para relatório.
+// Omitir uma categoria sem itens é a única coisa que muda de relatório para relatório.
 const ORDEM_CATEGORIAS = [
   'chão e rodapé', 'portas e aros', 'móveis de quarto', 'móveis de cozinha', 'móveis de WC',
   'pladur e pedra', 'equipamentos de WC', 'eletrodomésticos',
@@ -12,7 +12,7 @@ const LABEL_CATEGORIA: Record<string, string> = {
   'chão e rodapé': 'Chão e rodapé',
   'portas e aros': 'Portas e aros',
   'móveis de quarto': 'Móveis de quarto',
-  'móveis de cozinha': 'Móveis de cozinha (podem também faltar as portas)',
+  'móveis de cozinha': 'Móveis de cozinha',
   'móveis de WC': 'Móveis de WC',
   'pladur e pedra': 'Pladur e pedra',
   'equipamentos de WC': 'Equipamentos de WC',
@@ -30,29 +30,38 @@ function capitalizar(s: string): string {
   return /[.!?]$/.test(semPonto) ? semPonto : `${semPonto}.`
 }
 
-function bulletsPintura(pintura: PinturaFacto[]): string[] {
-  const completa = pintura.filter(p => p.estado === 'pintura').map(p => `${p.divisao} (${p.superficie})`)
-  const ultima = pintura.filter(p => p.estado === 'ultima_demao').map(p => `${p.divisao} (${p.superficie})`)
-  return [
-    ...completa.map(d => `- Falta pintura em ${d}.`),
-    ...ultima.map(d => `- Falta a última demão em ${d}.`),
-  ]
+// Junta uma lista em prosa natural em português: "A, B e C".
+function listaNatural(itens: string[]): string {
+  if (itens.length === 0) return ''
+  if (itens.length === 1) return itens[0]
+  return `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`
 }
 
-// Gerador determinístico e único do relatório — sem LLM. Segue sempre a
-// mesma estrutura (secções fixas, bullet points por divisão) para que
-// todos os relatórios da obra tenham o mesmo formato visual; só o
-// conteúdo (o que falta em cada AP) muda. Ver spec §5 para as regras de
-// conteúdo (pintura, móveis, chão e rodapé, defeitos, ordem das secções);
-// remendos e tratamento de juntas nunca chegam aqui (categorizarItem já
-// os omite — ver categorize.ts).
-export function renderTemplate(facts: Facts): string {
-  const blocos: string[] = [`${facts.apartamento} — ${facts.progresso_pct}% concluído.`]
+function fraseePintura(pintura: PinturaFacto[]): string {
+  if (pintura.length === 0) return ''
+  const completa = pintura.filter(p => p.estado === 'pintura').map(p => `${p.divisao} (${p.superficie})`)
+  const ultima = pintura.filter(p => p.estado === 'ultima_demao').map(p => `${p.divisao} (${p.superficie})`)
+  const partes: string[] = []
+  if (completa.length) partes.push(`falta pintura em ${listaNatural(completa)}`)
+  if (ultima.length) partes.push(`falta a última demão em ${listaNatural(ultima)}`)
+  return capitalizar(partes.join('; '))
+}
 
-  const pintura = bulletsPintura(facts.pintura)
-  if (pintura.length > 0) {
-    blocos.push(['Pintura:', ...pintura].join('\n'))
-  }
+// Gerador determinístico e único do relatório — sem LLM (o LLM não garantia
+// a mesma estrutura duas vezes). Escreve sempre em prosa, um parágrafo por
+// tópico, na mesma ordem e com as mesmas regras (spec §5): pintura, chão e
+// rodapé, portas e aros, móveis (quarto/cozinha/WC — na cozinha podem faltar
+// as portas), pladur e pedra, equipamentos de WC, eletrodomésticos, ar
+// condicionado, bomba de calor, defeitos ("a registar") e, por fim,
+// observações escritas na checklist. Nunca omite uma categoria com itens
+// pendentes — só omite as que não têm nada por fazer. Remendos e
+// tratamento de juntas nunca chegam aqui (categorizarItem já os exclui —
+// ver categorize.ts).
+export function renderTemplate(facts: Facts): string {
+  const paragrafos: string[] = [`${facts.apartamento} — ${facts.progresso_pct}% concluído.`]
+
+  const pintura = fraseePintura(facts.pintura)
+  if (pintura) paragrafos.push(pintura)
 
   const porCategoria = new Map<string, string[]>()
   for (const item of facts.pendentes) {
@@ -69,15 +78,22 @@ export function renderTemplate(facts: Facts): string {
   for (const cat of ordenadas) {
     const divs = porCategoria.get(cat)!
     const label = LABEL_CATEGORIA[cat] ?? capitalizar(cat).replace(/\.$/, '')
-    blocos.push([`${label}:`, ...divs.map(d => `- ${d}`)].join('\n'))
+    if (cat === 'defeito') {
+      // Defeitos não são "falta X" — são um problema a assinalar, não uma instalação em falta.
+      paragrafos.push(`${label}: ${listaNatural(divs)}.`)
+      continue
+    }
+    const nota = cat === 'móveis de cozinha' ? ' (podem também faltar as portas)' : ''
+    paragrafos.push(`${label}: falta em ${listaNatural(divs)}${nota}.`)
   }
 
   if (facts.observacoes.length > 0) {
-    const linhas = facts.observacoes.map(
-      o => `- ${o.divisao}${o.elemento ? ` (${o.elemento})` : ''}: ${capitalizar(o.texto)}`,
-    )
-    blocos.push(['Observações:', ...linhas].join('\n'))
+    const frases = facts.observacoes.map(o => {
+      const local = o.elemento ? `${o.divisao} (${o.elemento})` : o.divisao
+      return `${local}: ${capitalizar(o.texto)}`
+    })
+    paragrafos.push(`Observações — ${frases.join(' ')}`)
   }
 
-  return blocos.join('\n\n')
+  return paragrafos.join('\n\n')
 }
