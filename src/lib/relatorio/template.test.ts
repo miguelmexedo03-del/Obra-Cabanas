@@ -30,8 +30,8 @@ describe('renderTemplate', () => {
     expect(txt).toContain('AP1')
     expect(txt).toContain('39%')
   })
-  it('é um único parágrafo em prosa corrida (sem bullets nem linhas em branco)', () => {
-    expect(txt).not.toContain('\n')
+  it('tem vários parágrafos (um por tópico), não um só bloco corrido', () => {
+    expect(txt.split('\n\n').length).toBeGreaterThan(1)
     expect(txt).not.toContain('- ')
   })
   it('menciona pintura e última demão', () => {

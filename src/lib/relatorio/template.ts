@@ -247,5 +247,5 @@ export function renderTemplate(facts: Facts): string {
     frases.push(capitalizar(`observações: ${obs.join('; ')}`))
   }
 
-  return frases.join(' ')
+  return frases.join('\n\n')
 }
