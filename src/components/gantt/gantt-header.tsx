@@ -37,12 +37,12 @@ export function GanttHeader({ viewStart, viewEnd, nameColWidth }: GanttHeaderPro
   return (
     <div className="sticky top-0 z-10 shadow-sm select-none">
       {/* Row 1: Quarters */}
-      <div className="flex border-b border-slate-600">
-        <div className="shrink-0 bg-slate-800 border-r border-slate-600" style={{ width: nameColWidth }} />
+      <div className="flex border-b border-sidebar-border">
+        <div className="shrink-0 bg-sidebar border-r border-sidebar-border" style={{ width: nameColWidth }} />
         {quarterGroups.map(({ key, count }) => (
           <div
             key={key}
-            className="shrink-0 text-center text-xs font-bold bg-slate-800 text-slate-100 border-r border-slate-600 py-1 truncate"
+            className="shrink-0 text-center text-xs font-bold bg-sidebar text-sidebar-accent-foreground border-r border-sidebar-border py-1 truncate"
             style={{ width: count * COL_WIDTH }}
           >
             {key}
@@ -50,12 +50,12 @@ export function GanttHeader({ viewStart, viewEnd, nameColWidth }: GanttHeaderPro
         ))}
       </div>
       {/* Row 2: Months */}
-      <div className="flex border-b border-slate-500">
-        <div className="shrink-0 bg-slate-700 border-r border-slate-500" style={{ width: nameColWidth }} />
+      <div className="flex border-b border-sidebar-border">
+        <div className="shrink-0 bg-sidebar-accent border-r border-sidebar-border" style={{ width: nameColWidth }} />
         {monthGroups.map(({ key, count }) => (
           <div
             key={key}
-            className="shrink-0 text-center text-xs font-semibold bg-slate-700 text-slate-100 border-r border-slate-500 py-1 truncate"
+            className="shrink-0 text-center text-xs font-semibold bg-sidebar-accent text-sidebar-accent-foreground border-r border-sidebar-border py-1 truncate"
             style={{ width: count * COL_WIDTH }}
           >
             {format(new Date(key + '-01'), 'MMMM', { locale: pt }).toUpperCase()}
@@ -63,12 +63,12 @@ export function GanttHeader({ viewStart, viewEnd, nameColWidth }: GanttHeaderPro
         ))}
       </div>
       {/* Row 3: Weeks */}
-      <div className="flex border-b border-slate-200">
+      <div className="flex border-b border-border">
         <div
-          className="shrink-0 flex items-center px-3 border-r border-slate-200 bg-slate-100"
+          className="shrink-0 flex items-center px-3 border-r border-border bg-muted"
           style={{ width: nameColWidth }}
         >
-          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Apartamento</span>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Apartamento</span>
         </div>
         {weeks.map(w => {
           const isCurrentWeek = isSameDay(w, currentWeekStart)
@@ -76,10 +76,10 @@ export function GanttHeader({ viewStart, viewEnd, nameColWidth }: GanttHeaderPro
             <div
               key={w.toISOString()}
               className={cn(
-                'shrink-0 border-r text-center text-[10px] py-1',
+                'shrink-0 border-r border-border text-center text-[10px] py-1',
                 isCurrentWeek
-                  ? 'bg-emerald-500 text-white font-bold'
-                  : 'bg-slate-100 text-slate-500'
+                  ? 'bg-brand-600 text-white font-bold'
+                  : 'bg-muted text-muted-foreground'
               )}
               style={{ width: COL_WIDTH }}
             >

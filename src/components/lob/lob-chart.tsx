@@ -35,7 +35,7 @@ export function LobChart({ entries, fases, viewStart, viewEnd }: LobChartProps) 
   const showToday = todayX >= LM && todayX <= CW - RM
 
   return (
-    <div className="overflow-x-auto rounded-lg border bg-background">
+    <div className="overflow-x-auto rounded-lg border border-border bg-card">
       <svg
         viewBox={`0 0 ${CW} ${CH}`}
         width={CW}
@@ -52,7 +52,7 @@ export function LobChart({ entries, fases, viewStart, viewEnd }: LobChartProps) 
               y={TM + i * ROW_H}
               width={GW}
               height={ROW_H}
-              fill="#f8fafc"
+              fill="#F1F1ED"
             />
           ) : null
         )}
@@ -63,8 +63,8 @@ export function LobChart({ entries, fases, viewStart, viewEnd }: LobChartProps) 
           if (x < LM || x > CW - RM) return null
           return (
             <g key={d.toISOString()}>
-              <line x1={x} y1={TM} x2={x} y2={CH - BM} stroke="#e2e8f0" strokeWidth={1} />
-              <text x={x + 3} y={TM - 6} fontSize={10} fill="#94a3b8">
+              <line x1={x} y1={TM} x2={x} y2={CH - BM} stroke="#DDDEDA" strokeWidth={1} />
+              <text x={x + 3} y={TM - 6} fontSize={10} fill="#91938C">
                 {format(d, 'MMM yy', { locale: pt })}
               </text>
             </g>
@@ -76,7 +76,7 @@ export function LobChart({ entries, fases, viewStart, viewEnd }: LobChartProps) 
           const ap = i + 1
           const y = TM + i * ROW_H + ROW_H / 2 + 4
           return (
-            <text key={ap} x={LM - 4} y={y} fontSize={10} fill="#64748b" textAnchor="end">
+            <text key={ap} x={LM - 4} y={y} fontSize={10} fill="#73746E" textAnchor="end">
               AP{ap}
             </text>
           )
@@ -105,19 +105,19 @@ export function LobChart({ entries, fases, viewStart, viewEnd }: LobChartProps) 
           <line
             x1={todayX} y1={TM}
             x2={todayX} y2={CH - BM}
-            stroke="#ef4444"
+            stroke="#DC2626"
             strokeWidth={1.5}
             strokeDasharray="4 3"
           />
         )}
 
         {/* Border lines */}
-        <line x1={LM} y1={TM} x2={LM} y2={CH - BM} stroke="#e2e8f0" strokeWidth={1} />
-        <line x1={LM} y1={CH - BM} x2={CW - RM} y2={CH - BM} stroke="#e2e8f0" strokeWidth={1} />
+        <line x1={LM} y1={TM} x2={LM} y2={CH - BM} stroke="#DDDEDA" strokeWidth={1} />
+        <line x1={LM} y1={CH - BM} x2={CW - RM} y2={CH - BM} stroke="#DDDEDA" strokeWidth={1} />
       </svg>
 
       {/* Legenda */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1 px-4 py-2 border-t">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 px-4 py-2 border-t border-border">
         {fases.map(f => (
           <div key={f.id} className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: f.cor_hex }} />
@@ -125,7 +125,7 @@ export function LobChart({ entries, fases, viewStart, viewEnd }: LobChartProps) 
           </div>
         ))}
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <div className="w-3 h-px border-t-2 border-dashed border-red-400" />
+          <div className="w-3 h-px border-t-2 border-dashed border-destructive" />
           Hoje
         </div>
       </div>

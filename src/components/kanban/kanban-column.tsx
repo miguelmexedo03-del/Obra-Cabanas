@@ -13,9 +13,9 @@ const COLUMN_LABELS: Record<string, string> = {
 
 const COLUMN_HEADING_COLORS: Record<string, string> = {
   por_fazer: 'text-muted-foreground',
-  em_curso: 'text-blue-600 dark:text-blue-400',
-  bloqueado: 'text-red-600 dark:text-red-400',
-  concluido: 'text-green-600 dark:text-green-400',
+  em_curso: 'text-brand-600 dark:text-brand-400',
+  bloqueado: 'text-destructive',
+  concluido: 'text-brand-800 dark:text-brand-300',
 }
 
 interface KanbanColumnProps {

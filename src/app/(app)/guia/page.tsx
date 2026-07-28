@@ -18,7 +18,7 @@ const fases = [
 const ferramentas = [
   {
     icon: BarChart3,
-    cor: 'bg-slate-700',
+    cor: 'bg-foreground',
     titulo: 'Gantt',
     resumo: 'O calendário visual da obra. É aqui que defines quando começa e acaba cada fase em cada apartamento.',
     comoUsar: [
@@ -31,7 +31,7 @@ const ferramentas = [
   },
   {
     icon: CheckSquare,
-    cor: 'bg-emerald-700',
+    cor: 'bg-foreground',
     titulo: 'Checklist',
     resumo: '3748 itens de qualidade distribuídos pelos 24 apartamentos. Cada item representa uma verificação física na obra.',
     comoUsar: [
@@ -44,7 +44,7 @@ const ferramentas = [
   },
   {
     icon: Building2,
-    cor: 'bg-blue-700',
+    cor: 'bg-foreground',
     titulo: 'Apartamentos',
     resumo: 'Vista individual de cada AP. Mostra o progresso geral e a checklist filtrada por esse apartamento.',
     comoUsar: [
@@ -57,7 +57,7 @@ const ferramentas = [
   },
   {
     icon: Kanban,
-    cor: 'bg-violet-700',
+    cor: 'bg-foreground',
     titulo: 'Kanban',
     resumo: 'Board visual para acompanhar o estado das fases Gantt. Quatro colunas: Por Fazer → Em Curso → Bloqueado → Concluído.',
     comoUsar: [
@@ -70,7 +70,7 @@ const ferramentas = [
   },
   {
     icon: TrendingUp,
-    cor: 'bg-amber-700',
+    cor: 'bg-foreground',
     titulo: 'Line of Balance',
     resumo: 'Ferramenta de planeamento baseada em fluxo contínuo (takt time). Defines as durações e o sistema calcula as datas automaticamente.',
     comoUsar: [
@@ -139,7 +139,7 @@ export default function GuiaPage() {
             <div key={f.titulo} className="rounded-xl border overflow-hidden">
               <div className="flex items-center gap-3 px-5 py-4 border-b bg-muted/30">
                 <div className={`${f.cor} p-2 rounded-md shrink-0`}>
-                  <f.icon className="h-4 w-4 text-white" />
+                  <f.icon className="h-4 w-4 text-background" />
                 </div>
                 <h3 className="font-semibold">{f.titulo}</h3>
               </div>
@@ -174,9 +174,9 @@ export default function GuiaPage() {
         <div className="rounded-xl border overflow-hidden divide-y">
           {[
             { simbolo: '▬', cor: 'text-slate-300', label: 'Barra cinzenta clara', desc: 'Duração total do AP — vai da data de início mais cedo à data de fim mais tarde entre todas as fases.' },
-            { simbolo: '▬', cor: 'text-emerald-500', label: 'Barras coloridas', desc: 'Cada barra é uma fase individual. A cor corresponde à fase — a mesma da Checklist e do Kanban.' },
+            { simbolo: '▬', cor: 'text-brand-500', label: 'Barras coloridas', desc: 'Cada barra é uma fase individual. A cor corresponde à fase — a mesma da Checklist e do Kanban.' },
             { simbolo: '┄', cor: 'text-slate-400', label: 'Linha tracejada', desc: 'A fase ainda não tem datas. Clica para abrir o modal e definir o início e o fim.' },
-            { simbolo: '│', cor: 'text-emerald-500', label: 'Linha verde vertical', desc: 'É hoje. Qualquer barra à esquerda desta linha já devia estar em curso ou concluída.' },
+            { simbolo: '│', cor: 'text-brand-600', label: 'Linha verde vertical', desc: 'É hoje. Qualquer barra à esquerda desta linha já devia estar em curso ou concluída.' },
             { simbolo: '○', cor: 'text-red-500', label: 'Anel vermelho na barra', desc: 'O prazo passou e a fase ainda não está concluída. Requer atenção imediata.' },
           ].map(item => (
             <div key={item.label} className="flex items-start gap-4 px-5 py-4 hover:bg-muted/20 transition-colors">
@@ -220,9 +220,9 @@ export default function GuiaPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
             { dot: 'bg-slate-300', label: 'Por fazer', quando: 'A fase ainda não começou. É o estado inicial de todas as tarefas.' },
-            { dot: 'bg-blue-500', label: 'Em curso', quando: 'A equipa está ativamente a trabalhar nesta fase no terreno.' },
-            { dot: 'bg-red-500', label: 'Bloqueado', quando: 'Há um impedimento externo: material em falta, outra equipa a acabar, decisão pendente.' },
-            { dot: 'bg-emerald-500', label: 'Concluído', quando: 'A fase terminou, a checklist foi verificada e o trabalho aceite.' },
+            { dot: 'bg-brand-600', label: 'Em curso', quando: 'A equipa está ativamente a trabalhar nesta fase no terreno.' },
+            { dot: 'bg-destructive', label: 'Bloqueado', quando: 'Há um impedimento externo: material em falta, outra equipa a acabar, decisão pendente.' },
+            { dot: 'bg-brand-800', label: 'Concluído', quando: 'A fase terminou, a checklist foi verificada e o trabalho aceite.' },
           ].map(s => (
             <div key={s.label} className="rounded-lg border px-4 py-3.5 flex items-start gap-3">
               <span className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${s.dot}`} />
@@ -260,13 +260,13 @@ export default function GuiaPage() {
               ].map(row => (
                 <tr key={row.acao} className="hover:bg-muted/20 transition-colors">
                   <td className="px-5 py-3 text-muted-foreground">{row.acao}</td>
-                  <td className="px-4 py-3 text-center text-emerald-600 dark:text-emerald-400 font-medium">
+                  <td className="px-4 py-3 text-center text-brand-600 dark:text-brand-400 font-medium">
                     {row.admin ? '✓' : <span className="text-muted-foreground/30">—</span>}
                   </td>
-                  <td className="px-4 py-3 text-center text-emerald-600 dark:text-emerald-400 font-medium">
+                  <td className="px-4 py-3 text-center text-brand-600 dark:text-brand-400 font-medium">
                     {row.enc ? '✓' : <span className="text-muted-foreground/30">—</span>}
                   </td>
-                  <td className="px-4 py-3 text-center text-emerald-600 dark:text-emerald-400 font-medium">
+                  <td className="px-4 py-3 text-center text-brand-600 dark:text-brand-400 font-medium">
                     {row.op ? '✓' : <span className="text-muted-foreground/30">—</span>}
                   </td>
                 </tr>
