@@ -11,6 +11,9 @@ const facts: Facts = {
   ],
   pendentes: [
     { divisao: 'Cozinha', categoria: 'eletrodomésticos', elemento: 'Eletrodomésticos', sub_elemento: null, notas: null },
+    { divisao: 'WC(Suite 1)', categoria: 'equipamentos de WC', elemento: 'Sanita', sub_elemento: null, notas: null },
+    { divisao: 'WC (Suite 2)', categoria: 'equipamentos de WC', elemento: 'Lavatório', sub_elemento: null, notas: null },
+    { divisao: 'Varanda', categoria: 'pladur e pedra', elemento: 'Paredes', sub_elemento: 'Pedra da fachada', notas: null },
     { divisao: 'Suite 1', categoria: 'defeito', elemento: 'Paredes', sub_elemento: 'Buraco na parede', notas: null },
   ],
   observacoes: [
@@ -28,19 +31,23 @@ describe('renderTemplate', () => {
     expect(txt.toLowerCase()).toContain('pintura')
     expect(txt.toLowerCase()).toContain('última demão')
   })
-  it('lista categorias pendentes', () => {
-    expect(txt.toLowerCase()).toContain('eletrodomésticos')
-  })
   it('nunca fica vazio', () => {
     expect(txt.length).toBeGreaterThan(20)
   })
   it('escreve em prosa, um parágrafo por secção, sem bullets', () => {
-    expect(txt).toContain('Eletrodomésticos: falta em Cozinha.')
+    expect(txt).toContain('Eletrodomésticos: falta na cozinha.')
     expect(txt).not.toContain('- ')
+  })
+  it('generaliza divisões do mesmo tipo sem itens a preservar ("nos dois WCs")', () => {
+    expect(txt).toContain('Equipamentos de WC: falta nos dois WCs.')
+  })
+  it('nunca generaliza um item com detalhe específico (sub_elemento/notas)', () => {
+    expect(txt).toContain('Pladur e pedra: falta na Varanda (Pedra da fachada).')
+    expect(txt).toContain('A registar: na Suite 1 (Buraco na parede).')
   })
   it('inclui observações escritas, com a divisão e o elemento', () => {
     expect(txt).toContain('Observações —')
-    expect(txt).toContain('Cozinha (Bancada)')
+    expect(txt).toContain('na Cozinha (Bancada)')
     expect(txt).toContain('Falta selar o encontro com a parede')
   })
   it('omite o parágrafo de observações quando não há nenhuma', () => {
