@@ -19,7 +19,7 @@ export class GeminiProvider implements LLMProvider {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(25_000),
     })
     if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`)
     const json = (await res.json()) as {
