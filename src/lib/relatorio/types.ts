@@ -14,11 +14,18 @@ export interface PendenteItem {
   notas: string | null
 }
 
+export interface ObservacaoFacto {
+  divisao: string
+  elemento: string
+  texto: string
+}
+
 export interface Facts {
   apartamento: string     // 'AP1'
   progresso_pct: number   // 39
   pintura: PinturaFacto[]
   pendentes: PendenteItem[]
+  observacoes: ObservacaoFacto[]
 }
 
 export interface RelatorioResult {

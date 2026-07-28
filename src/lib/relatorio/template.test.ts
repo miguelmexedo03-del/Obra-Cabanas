@@ -13,6 +13,9 @@ const facts: Facts = {
     { divisao: 'Cozinha', categoria: 'eletrodomésticos', elemento: 'Eletrodomésticos', sub_elemento: null, notas: null },
     { divisao: 'Suite 1', categoria: 'defeito', elemento: 'Paredes', sub_elemento: 'Buraco na parede', notas: null },
   ],
+  observacoes: [
+    { divisao: 'Cozinha', elemento: 'Bancada', texto: 'falta selar o encontro com a parede' },
+  ],
 }
 
 describe('renderTemplate', () => {
@@ -30,5 +33,18 @@ describe('renderTemplate', () => {
   })
   it('nunca fica vazio', () => {
     expect(txt.length).toBeGreaterThan(20)
+  })
+  it('usa bullet points por secção', () => {
+    expect(txt).toContain('Eletrodomésticos:')
+    expect(txt).toMatch(/^- Cozinha$/m)
+  })
+  it('inclui observações escritas, com a divisão e o elemento', () => {
+    expect(txt).toContain('Observações:')
+    expect(txt).toContain('Cozinha (Bancada)')
+    expect(txt).toContain('falta selar o encontro com a parede'.charAt(0).toUpperCase() + 'alta selar o encontro com a parede')
+  })
+  it('omite a secção de observações quando não há nenhuma', () => {
+    const semObs = renderTemplate({ ...facts, observacoes: [] })
+    expect(semObs).not.toContain('Observações:')
   })
 })

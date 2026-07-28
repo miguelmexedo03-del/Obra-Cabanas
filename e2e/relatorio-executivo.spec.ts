@@ -15,7 +15,7 @@ async function login(page: import('@playwright/test').Page) {
 
 // Smoke. Corre em CI/preview (precisa da app a servir + sessão), NÃO localmente
 // (ver constrangimento de RAM/localhost do projeto).
-test('página do relatório executivo carrega e gera um parágrafo', async ({ page }) => {
+test('página do relatório executivo carrega e gera um resumo', async ({ page }) => {
   await login(page)
   await page.goto('/relatorio/executivo')
   await page.waitForLoadState('networkidle')
@@ -25,6 +25,6 @@ test('página do relatório executivo carrega e gera um parágrafo', async ({ pa
   // exact: true evita colisão com o botão "Gerar obra toda" (substring match por defeito)
   await page.getByRole('button', { name: 'Gerar', exact: true }).click()
 
-  // Aparece um parágrafo (LLM ou template) num tempo razoável
-  await expect(page.locator('p.whitespace-pre-wrap')).toBeVisible({ timeout: 30_000 })
+  // Geração é determinística (sem LLM) — deve aparecer quase de imediato
+  await expect(page.getByRole('button', { name: 'Copiar' })).toBeVisible({ timeout: 10_000 })
 })
