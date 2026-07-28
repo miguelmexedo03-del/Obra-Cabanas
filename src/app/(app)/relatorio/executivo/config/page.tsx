@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Editor } from './_components/editor'
 
+// Esta página também chama o Gemini (preview de instruções) — mesma margem que /relatorio/executivo.
+export const maxDuration = 60
+
 export default async function ConfigPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

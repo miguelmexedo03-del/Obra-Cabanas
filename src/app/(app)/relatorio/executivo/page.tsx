@@ -2,8 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Gerador } from './_components/gerador'
 
 // O Gemini (free tier) tem sido lento a responder — dá margem à Server Action
-// para não ser cortada pelo runtime antes do timeout do próprio fetch.
-export const maxDuration = 30
+// para não ser cortada pelo runtime antes do timeout do próprio fetch (60s = teto do plano Hobby).
+export const maxDuration = 60
 
 export default async function RelatorioExecutivoPage() {
   const supabase = await createClient()
