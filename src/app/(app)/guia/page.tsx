@@ -1,5 +1,4 @@
-import { ArrowRight, AlertCircle } from 'lucide-react'
-import { BarChart3, CheckSquare, Building2, Kanban } from 'lucide-react'
+import { ArrowRight, BarChart3, CheckSquare, Building2, Kanban } from 'lucide-react'
 
 const ferramentas = [
   {
@@ -13,7 +12,6 @@ const ferramentas = [
       'Arrasta as barras para mover as datas — o sistema atualiza automaticamente.',
       'Para limpar datas de uma fase, abre o modal e clica "Limpar datas" — volta ao estado de tracejado.',
     ],
-    nota: 'A linha verde vertical é hoje. Um anel vermelho na barra significa que o prazo já passou.',
   },
   {
     icon: CheckSquare,
@@ -26,7 +24,6 @@ const ferramentas = [
       'Usa a barra de pesquisa para encontrar um item específico pelo nome.',
       'O contador no cabeçalho de cada grupo mostra quantos itens já estão feitos.',
     ],
-    nota: 'Cada item fica riscado quando concluído. A cor do quadrado corresponde à fase a que pertence.',
   },
   {
     icon: Building2,
@@ -39,7 +36,6 @@ const ferramentas = [
       'Dentro do detalhe, filtra por fase ou pesquisa itens específicos.',
       'A barra de progresso no topo reflete a percentagem de itens concluídos.',
     ],
-    nota: 'O progresso atualiza em tempo real — assim que marcas itens na checklist, aparece aqui também.',
   },
   {
     icon: Kanban,
@@ -52,7 +48,6 @@ const ferramentas = [
       '"Bloqueado" é para quando há impedimentos externos: material em falta, dependência de outra equipa.',
       'O estado aqui e no Gantt estão sincronizados — mudar num sítio reflete no outro.',
     ],
-    nota: 'Usa "Bloqueado" com critério — é a informação mais útil para identificar bottlenecks na obra.',
   },
 ]
 
@@ -129,11 +124,6 @@ export default function GuiaPage() {
                       </li>
                     ))}
                   </ol>
-                </div>
-
-                <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2.5">
-                  <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">{f.nota}</p>
                 </div>
               </div>
             </div>
