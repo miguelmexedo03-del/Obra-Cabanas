@@ -115,7 +115,25 @@ Isto fica registado aqui para não se perder, mas é uma spec/plano à parte.
 
 ---
 
-## 7. Testes
+## 7. Apagar itens do checklist (pedido adicional)
+
+Hoje existe "Adicionar item" (`criarElemento`, `AddItemInline`) mas não existe "apagar item" — nem action, nem botão. Adicionado ao âmbito:
+
+- **Aplica-se a qualquer item** do checklist — os 3748 originais, os adicionados manualmente, e os novos desta expansão (zonas comuns, Zona Técnica, eletrodomésticos). Sem distinção por origem.
+- **Pede confirmação** antes de apagar (popover/dialog simples: "Apagar este item? Perde notas e fotos associadas.") — ao contrário de outras ações da app (ex.: `removeMaterial`) que são instantâneas, porque isto é irreversível (perde `notas`/`responsavel`/`evidencias` para sempre; `item_evidencias`/`evidencia_fotos` caem por `ON DELETE CASCADE`).
+- **RLS:** a policy de `DELETE` em `elementos` é hoje só `admin` (nunca foi alargada quando os roles simplificaram para admin/user em 0006/0008). Alarga-se a `admin` + `user`, migration própria (`0016_elementos_delete_user.sql`):
+  ```sql
+  drop policy if exists "admin can delete elementos" on elementos;
+  create policy "admin/user can delete elementos" on elementos
+    for delete using (current_user_role() in ('admin', 'user'));
+  ```
+- **Server action nova** `apagarElemento(id: number)` em `src/app/actions/checklist.ts`, mesmo padrão de `toggleElemento` (`{success:true} | {success:false, error}`), `revalidatePath('/', 'layout')`.
+- **UI:** botão de apagar (ícone lixo) em `ChecklistItem`, ao lado do botão de evidências; abre popover de confirmação antes de chamar a action. Remoção otimista com rollback em caso de erro (mesmo padrão de `useOptimistic` já usado em `ChecklistGroups`/`ChecklistItem`).
+- Audit trail: já coberto automaticamente — o trigger `audit_elementos` (migration 0001) já regista `delete` em `audit_log`, não precisa de nada extra.
+
+---
+
+## 8. Testes
 
 Sem lógica pura nova (é uma migration de dados). Verificação:
 - Contagens pós-migration (secção 5).
