@@ -167,3 +167,28 @@ join (values
   (null::smallint, 'Acesso')
 ) as v(fase_id, elemento) on true
 where d.nome = 'Cobertura comum/técnica' and d.apartamento_id = 27;
+
+-- ------------------------------------------------------------
+-- PARTE B: "Zona Técnica" nos 24 apartamentos (ordem = último+1, por AP)
+-- ------------------------------------------------------------
+insert into divisoes (apartamento_id, nome, ordem)
+select ap.id, 'Zona Técnica',
+  coalesce((select max(d.ordem) from divisoes d where d.apartamento_id = ap.id), 0) + 1
+from apartamentos ap
+where ap.tipo = 'apartamento';
+
+insert into elementos (apartamento_id, divisao_id, fase_id, elemento, concluido)
+select d.apartamento_id, d.id, v.fase_id, v.elemento, false
+from divisoes d
+join apartamentos ap on ap.id = d.apartamento_id and ap.tipo = 'apartamento'
+join (values
+  (null::smallint, 'Equipamento AQS / bomba de calor — fixo e identificado'),
+  (null::smallint, 'Quadro elétrico'),
+  (null::smallint, 'Ventilação'),
+  (null::smallint, 'Dreno/escoamento'),
+  (3::smallint, 'Porta e acesso'),
+  (4::smallint, 'Pavimento'),
+  (2::smallint, 'Paredes'),
+  (1::smallint, 'Teto')
+) as v(fase_id, elemento) on true
+where d.nome = 'Zona Técnica';
