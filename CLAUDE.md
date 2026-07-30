@@ -191,7 +191,14 @@ O Miguel é estudante de mestrado em Supply Chain, junior em engenharia industri
 
 ---
 
-## 10. Regras de Ouro
+## 10. Migrations Aplicadas
+
+- `0015_checklist_zonas_comuns_zona_tecnica_eletrodomesticos.sql` — 3 unidades zona_comum (Lote 1, Lote 2, Edifício), divisão "Zona Técnica" nos 24 APs, eletrodomésticos nomeados na cozinha. `elementos.fase_id` passou a nullable.
+- `0016_elementos_delete_user.sql` — DELETE em elementos alargado a admin+user.
+
+---
+
+## 11. Regras de Ouro
 
 1. **Valida com o Miguel antes de decisões irreversíveis** (mudanças de schema em produção, deletes, deploys).
 2. **Testes básicos por milestone.** Pelo menos 1 teste e2e (Playwright) do happy path.
