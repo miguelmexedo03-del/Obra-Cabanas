@@ -192,3 +192,58 @@ join (values
   (1::smallint, 'Teto')
 ) as v(fase_id, elemento) on true
 where d.nome = 'Zona Técnica';
+
+-- ------------------------------------------------------------
+-- PARTE C: Eletrodomésticos por nome
+-- ------------------------------------------------------------
+-- Guarda de segurança: só apaga se continuar sem estado real (ver verificação
+-- pré-voo no plano de implementação). Se o WHERE não apanhar as 24 linhas,
+-- para e investiga antes de reaplicar.
+delete from elementos
+where id in (3379,3708,148,256,410,601,474,727,944,1077,1249,1421,1572,1718,1857,1992,2208,2346,2517,2687,2836,2989,3116,3246)
+  and concluido = false
+  and notas is null
+  and responsavel is null;
+
+-- 23 apartamentos (todos menos AP7) — insere na Cozinha existente de cada um,
+-- incluindo o AP2 que não tinha nenhuma linha "Eletrodomésticos" antes.
+insert into elementos (apartamento_id, divisao_id, fase_id, elemento, concluido)
+select d.apartamento_id, d.id, 8, v.elemento, false
+from divisoes d
+join apartamentos ap on ap.id = d.apartamento_id
+join (values
+  ('Placa vitrocerâmica'),
+  ('Micro-ondas'),
+  ('Forno'),
+  ('Máquina de lavar louça'),
+  ('Frigorífico combinado'),
+  ('Máquina de lavar roupa'),
+  ('Exaustor')
+) as v(elemento) on true
+where ap.tipo = 'apartamento' and ap.id <> 7 and d.nome = 'Cozinha';
+
+-- AP7 — 6 aparelhos na Cozinha
+insert into elementos (apartamento_id, divisao_id, fase_id, elemento, concluido)
+select d.apartamento_id, d.id, 8, v.elemento, false
+from divisoes d
+join (values
+  ('Frigorífico (americano)'),
+  ('Forno'),
+  ('Gaveta de aquecimento'),
+  ('Máquina de lavar louça'),
+  ('Placa de indução'),
+  ('Exaustor')
+) as v(elemento) on true
+where d.apartamento_id = 7 and d.nome = 'Cozinha';
+
+-- AP7 — 2 aparelhos no Closet (lavandaria), onde já estava hoje a máquina de lavar roupa
+insert into elementos (apartamento_id, divisao_id, fase_id, elemento, concluido)
+select d.apartamento_id, d.id, 8, v.elemento, false
+from divisoes d
+join (values
+  ('Máquina de lavar roupa'),
+  ('Máquina de secar')
+) as v(elemento) on true
+where d.apartamento_id = 7 and d.nome = 'Closet (lavandaria)';
+
+commit;
