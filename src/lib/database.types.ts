@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -53,18 +53,21 @@ export type Database = {
           created_at: string
           descricao: string | null
           id: number
+          tipo: Database["public"]["Enums"]["apartamento_tipo"]
         }
         Insert: {
           codigo: string
           created_at?: string
           descricao?: string | null
           id: number
+          tipo?: Database["public"]["Enums"]["apartamento_tipo"]
         }
         Update: {
           codigo?: string
           created_at?: string
           descricao?: string | null
           id?: number
+          tipo?: Database["public"]["Enums"]["apartamento_tipo"]
         }
         Relationships: []
       }
@@ -169,7 +172,7 @@ export type Database = {
           data_prevista: string | null
           divisao_id: number | null
           elemento: string
-          fase_id: number
+          fase_id: number | null
           id: number
           notas: string | null
           responsavel: string | null
@@ -185,7 +188,7 @@ export type Database = {
           data_prevista?: string | null
           divisao_id?: number | null
           elemento: string
-          fase_id: number
+          fase_id?: number | null
           id?: number
           notas?: string | null
           responsavel?: string | null
@@ -201,7 +204,7 @@ export type Database = {
           data_prevista?: string | null
           divisao_id?: number | null
           elemento?: string
-          fase_id?: number
+          fase_id?: number | null
           id?: number
           notas?: string | null
           responsavel?: string | null
@@ -635,6 +638,7 @@ export type Database = {
       show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
+      apartamento_tipo: "apartamento" | "zona_comum"
       audit_action: "insert" | "update" | "delete"
       tarefa_status: "por_fazer" | "em_curso" | "bloqueado" | "concluido"
       user_role: "admin" | "encarregado" | "operario" | "user"
@@ -765,6 +769,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      apartamento_tipo: ["apartamento", "zona_comum"],
       audit_action: ["insert", "update", "delete"],
       tarefa_status: ["por_fazer", "em_curso", "bloqueado", "concluido"],
       user_role: ["admin", "encarregado", "operario", "user"],
