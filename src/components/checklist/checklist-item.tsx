@@ -1,10 +1,22 @@
 'use client'
 
 import { useOptimistic, useState, useTransition } from 'react'
-import { Camera, Plus } from 'lucide-react'
-import { toggleElemento } from '@/app/actions/checklist'
+import { useRouter } from 'next/navigation'
+import { Camera, Plus, Trash2 } from 'lucide-react'
+import { toggleElemento, apagarElemento } from '@/app/actions/checklist'
 import { toast } from 'sonner'
 import { EvidenciasDialog } from './evidencias-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 interface Props {
   id: number
@@ -16,9 +28,13 @@ interface Props {
 }
 
 export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor, evidenciasCount = 0 }: Props) {
+  const router = useRouter()
   const [optimistic, setOptimistic] = useOptimistic(concluido)
   const [isPending, startTransition] = useTransition()
   const [openEvidencias, setOpenEvidencias] = useState(false)
+  const [openDelete, setOpenDelete] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isDeleted, setIsDeleted] = useState(false)
   const [count, setCount] = useState(evidenciasCount)
 
   function handleChange() {
@@ -38,6 +54,26 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
     e.stopPropagation()
     setOpenEvidencias(true)
   }
+
+  function handleDeleteTriggerClick(e: React.MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
+  async function handleConfirmDelete() {
+    setIsDeleting(true)
+    const result = await apagarElemento(id)
+    if (result.success) {
+      setOpenDelete(false)
+      setIsDeleted(true)
+      router.refresh()
+    } else {
+      setIsDeleting(false)
+      toast.error('Não foi possível apagar', { description: result.error })
+    }
+  }
+
+  if (isDeleted) return null
 
   return (
     <label
@@ -104,6 +140,35 @@ export function ChecklistItem({ id, elemento, sub_elemento, concluido, faseColor
           <Plus className="h-3.5 w-3.5 text-muted-foreground/50" />
         )}
       </button>
+
+      <AlertDialog open={openDelete} onOpenChange={setOpenDelete}>
+        <AlertDialogTrigger
+          onClick={handleDeleteTriggerClick}
+          render={
+            <button
+              type="button"
+              aria-label="Apagar item"
+              className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/40 transition-colors hover:bg-destructive/10 hover:text-destructive"
+            />
+          }
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apagar item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {sub_elemento ? `${elemento} — ${sub_elemento}` : elemento}. Perde notas, responsável e fotos associadas. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" disabled={isDeleting} onClick={handleConfirmDelete}>
+              {isDeleting ? 'A apagar…' : 'Apagar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <EvidenciasDialog
         elementoId={id}
