@@ -55,16 +55,11 @@ export function divisaoSortPriority(nome: string): number {
 }
 
 export const TIPOS_DIVISAO = [
-  'Entrada', 'Sala', 'Cozinha', 'Suites/Quartos', 'WC', 'Closet', 'Varanda',
+  'Entrada', 'Sala', 'Cozinha', 'Suites/Quartos', 'WC', 'Closet', 'Varanda', 'Zona Técnica', 'Zona Comum',
 ] as const
 
 export type TipoDivisao = typeof TIPOS_DIVISAO[number]
 
-// Categoriza uma divisão pelo tipo de compartimento, colapsando variantes
-// (WC Suite 1, WC de Serviço, WC(Suite Principal)...) numa única categoria "WC",
-// e todas as suites/quartos (Suite Principal, Suite 1, Suite 2, Quarto, etc.)
-// numa única categoria "Suites/Quartos" — não interessa distinguir qual suite
-// específica no dia-a-dia do filtro.
 export function tipoDivisao(nome: string): TipoDivisao {
   const n = nome
     .toLowerCase()
@@ -74,6 +69,12 @@ export function tipoDivisao(nome: string): TipoDivisao {
     .replace(/\s+/g, ' ')
     .trim()
 
+  if (n === 'zona tecnica') return 'Zona Técnica'
+  if (
+    n.startsWith('atrio de entrada') || n.startsWith('circulacao') ||
+    n === 'escada' || n === 'elevador' || n.startsWith('garagem') ||
+    n.startsWith('zonas tecnicas') || n.startsWith('cobertura')
+  ) return 'Zona Comum'
   if (n.includes('wc')) return 'WC'
   if (n.startsWith('closet')) return 'Closet'
   if (n === 'sala') return 'Sala'
@@ -86,14 +87,16 @@ export function tipoDivisao(nome: string): TipoDivisao {
 
 export function sortElementos<T extends {
   elemento: string
-  fase_id: number
+  fase_id: number | null
   sub_elemento: string | null
 }>(items: T[]): T[] {
   return [...items].sort((a, b) => {
     const eA = ELEMENTO_ORDER[a.elemento] ?? 99
     const eB = ELEMENTO_ORDER[b.elemento] ?? 99
     if (eA !== eB) return eA - eB
-    if (a.fase_id !== b.fase_id) return a.fase_id - b.fase_id
+    const fA = a.fase_id ?? Infinity
+    const fB = b.fase_id ?? Infinity
+    if (fA !== fB) return fA - fB
     const sA = a.sub_elemento === null ? 0 : (SUB_ELEMENTO_ORDER[a.sub_elemento] ?? 50)
     const sB = b.sub_elemento === null ? 0 : (SUB_ELEMENTO_ORDER[b.sub_elemento] ?? 50)
     if (sA !== sB) return sA - sB
