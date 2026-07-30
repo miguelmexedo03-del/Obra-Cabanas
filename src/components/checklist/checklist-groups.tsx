@@ -12,7 +12,7 @@ export type ChecklistGroupItem = {
   elemento: string
   sub_elemento: string | null
   concluido: boolean
-  fase_id: number
+  fase_id: number | null
   divisao_id: number | null
 }
 
@@ -20,7 +20,7 @@ export type ChecklistGroupData = {
   id: number | null
   nome: string
   faseColor: string
-  defaultFaseId: number
+  defaultFaseId: number | null
   concluidos: number
   items: ChecklistGroupItem[]
 }
@@ -50,7 +50,7 @@ export function ChecklistGroups({ initialGroups, apartamentoId, evidenciasCountM
       ),
   )
 
-  function handleAdd(divisaoId: number, faseId: number, nome: string) {
+  function handleAdd(divisaoId: number, faseId: number | null, nome: string) {
     const tempItem: ChecklistGroupItem = {
       id: -Date.now(),
       elemento: nome,

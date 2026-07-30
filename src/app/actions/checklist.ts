@@ -8,7 +8,7 @@ type Result = { success: true } | { success: false; error: string }
 export async function criarElemento(
   apartamentoId: number,
   divisaoId: number,
-  faseId: number,
+  faseId: number | null,
   nome: string,
 ): Promise<{ success: true; id: number } | { success: false; error: string }> {
   const supabase = await createClient()
@@ -39,7 +39,7 @@ export async function criarElemento(
 type BatchItem = {
   apartamento_id: number
   divisao_id: number
-  fase_id: number
+  fase_id: number | null
   elemento: string
 }
 

@@ -25,7 +25,7 @@ type RawElemento = {
   concluido: boolean
   apartamento_id: number
   divisao_id: number | null
-  fase_id: number
+  fase_id: number | null
   divisoes: { id: number; nome: string; ordem: number } | null
   fases: { nome: string; cor_hex: string } | null
   apartamentos: { codigo: string } | null
