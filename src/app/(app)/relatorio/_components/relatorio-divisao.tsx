@@ -14,7 +14,7 @@ export type ElementoRelatorio = {
   sub_elemento: string | null
   concluido: boolean
   notas: string | null
-  fase_id: number
+  fase_id: number | null
   divisao_id: number
   fases: { nome: string; cor_hex: string } | null
   divisoes: { id: number; nome: string; ordem: number } | null

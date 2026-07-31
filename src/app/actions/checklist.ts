@@ -8,7 +8,7 @@ type Result = { success: true } | { success: false; error: string }
 export async function criarElemento(
   apartamentoId: number,
   divisaoId: number,
-  faseId: number,
+  faseId: number | null,
   nome: string,
 ): Promise<{ success: true; id: number } | { success: false; error: string }> {
   const supabase = await createClient()
@@ -39,7 +39,7 @@ export async function criarElemento(
 type BatchItem = {
   apartamento_id: number
   divisao_id: number
-  fase_id: number
+  fase_id: number | null
   elemento: string
 }
 
@@ -83,6 +83,19 @@ export async function toggleElemento(id: number, concluido: boolean): Promise<Re
     .eq('id', id)
 
   if (error) return { success: false, error: error.message }
+
+  revalidatePath('/', 'layout')
+  return { success: true }
+}
+
+export async function apagarElemento(id: number): Promise<Result> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Não autenticado.' }
+
+  const { data, error } = await supabase.from('elementos').delete().eq('id', id).select('id')
+  if (error) return { success: false, error: error.message }
+  if (!data || data.length === 0) return { success: false, error: 'Item não encontrado ou sem permissão para apagar.' }
 
   revalidatePath('/', 'layout')
   return { success: true }

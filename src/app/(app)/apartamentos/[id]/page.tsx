@@ -23,7 +23,7 @@ type RawElemento = {
   sub_elemento: string | null
   concluido: boolean
   divisao_id: number | null
-  fase_id: number
+  fase_id: number | null
   divisoes: { id: number; nome: string; ordem: number } | null
   fases: { nome: string; cor_hex: string } | null
 }
@@ -35,9 +35,9 @@ type DivisaoGroup = {
   items: RawElemento[]
 }
 
-function getDefaultFaseId(items: { fase_id: number }[]): number {
-  if (items.length === 0) return 1
-  const counts = new Map<number, number>()
+function getDefaultFaseId(items: { fase_id: number | null }[]): number | null {
+  if (items.length === 0) return null
+  const counts = new Map<number | null, number>()
   for (const item of items) {
     counts.set(item.fase_id, (counts.get(item.fase_id) ?? 0) + 1)
   }

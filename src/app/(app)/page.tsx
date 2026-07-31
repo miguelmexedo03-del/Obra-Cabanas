@@ -10,15 +10,16 @@ export default async function DashboardPage() {
   const supabase = await createClient()
 
   const [apResult, progApResult, progFaseResult, fasesResult] = await Promise.all([
-    supabase.from('apartamentos').select('id, codigo').order('id'),
+    supabase.from('apartamentos').select('id, codigo').eq('tipo', 'apartamento').order('id'),
     supabase.from('progresso_por_apartamento').select('apartamento_id, percentagem, concluidos, total'),
-    supabase.from('progresso_por_fase').select('fase_id, concluidos, total'),
+    supabase.from('progresso_por_fase').select('apartamento_id, fase_id, concluidos, total'),
     supabase.from('fases').select('id, nome, cor_hex').order('ordem'),
   ])
 
   const apartamentos = apResult.data ?? []
-  const progAp = progApResult.data ?? []
-  const progFase = progFaseResult.data ?? []
+  const apIds = new Set(apartamentos.map(a => a.id))
+  const progAp = (progApResult.data ?? []).filter(r => r.apartamento_id != null && apIds.has(r.apartamento_id))
+  const progFase = (progFaseResult.data ?? []).filter(r => r.apartamento_id != null && apIds.has(r.apartamento_id))
   const fases = fasesResult.data ?? []
 
   const obraPct = progAp.length
