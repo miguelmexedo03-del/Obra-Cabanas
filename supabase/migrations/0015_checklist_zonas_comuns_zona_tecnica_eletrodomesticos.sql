@@ -199,11 +199,14 @@ where d.nome = 'Zona Técnica';
 -- Guarda de segurança: só apaga se continuar sem estado real (ver verificação
 -- pré-voo no plano de implementação). Se o WHERE não apanhar as 24 linhas,
 -- para e investiga antes de reaplicar.
+-- Verificação pré-voo (produção, antes de escrever esta migration): as 24 linhas
+-- alvo foram confirmadas sem estado real (concluido=false, notas/responsavel nulos).
 delete from elementos
 where id in (3379,3708,148,256,410,601,474,727,944,1077,1249,1421,1572,1718,1857,1992,2208,2346,2517,2687,2836,2989,3116,3246)
   and concluido = false
   and notas is null
-  and responsavel is null;
+  and responsavel is null
+  and elemento ilike 'Eletrodom%';
 
 -- 23 apartamentos (todos menos AP7) — insere na Cozinha existente de cada um,
 -- incluindo o AP2 que não tinha nenhuma linha "Eletrodomésticos" antes.

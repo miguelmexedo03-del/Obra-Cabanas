@@ -41,7 +41,7 @@ Entidades principais (ver `supabase/schema.sql` para detalhes):
 
 ```
 profiles           (1:1 com auth.users, tem role)
-apartamentos       (24 rows fixas: AP1..AP24)
+apartamentos       (27 rows: 24 apartamentos AP1..AP24 + 3 zonas_comuns, campo `tipo`)
 fases              (5 rows: Tetos, Paredes, Carpintaria, Chão/Rodapé, WC Equipamentos)
 divisoes           (por apartamento: Entrada, Suite 1, WC Suite 1, Sala, Cozinha, Varanda...)
 elementos          (os items do checklist — ~3748 rows)
@@ -50,7 +50,7 @@ audit_log          (quem mudou o quê, quando)
 ```
 
 Relações-chave:
-- `elementos.fase_id → fases.id` (classificação pré-computada, não por string matching em runtime)
+- `elementos.fase_id → fases.id` (classificação pré-computada, não por string matching em runtime; nullable — itens sem fase de Gantt equivalente, ex.: zonas comuns)
 - `elementos.apartamento_id → apartamentos.id`
 - `tarefas_gantt.parent_id → tarefas_gantt.id` (self-reference para pai-filho)
 - O **Kanban é uma VIEW** sobre `tarefas_gantt` filtrada por status.

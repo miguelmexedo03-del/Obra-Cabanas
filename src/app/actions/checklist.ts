@@ -93,8 +93,9 @@ export async function apagarElemento(id: number): Promise<Result> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Não autenticado.' }
 
-  const { error } = await supabase.from('elementos').delete().eq('id', id)
+  const { data, error } = await supabase.from('elementos').delete().eq('id', id).select('id')
   if (error) return { success: false, error: error.message }
+  if (!data || data.length === 0) return { success: false, error: 'Item não encontrado ou sem permissão para apagar.' }
 
   revalidatePath('/', 'layout')
   return { success: true }
